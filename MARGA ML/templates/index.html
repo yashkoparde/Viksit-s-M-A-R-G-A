@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPLADS Intelligence Suite</title>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent: #818cf8;
+            --accent-hover: #6366f1;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            background: var(--glass-bg);
+            padding: 0.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #a5b4fc, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        select option {
+            background: #1e1b4b;
+            color: white;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 1.25rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: scale(1.02);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(99, 102, 241, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        button.loading .loading-overlay {
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .result-card {
+            display: none;
+            margin-top: 2rem;
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .status-badge {
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .status-flagged {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status-cleared {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .val-danger { color: var(--danger); }
+        .val-success { color: var(--success); }
+        .val-warning { color: var(--warning); }
+
+        .explanation {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            margin-top: 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('complianceTab')">Compliance Evaluator</button>
+            <button class="tab-btn" onclick="switchTab('auditTab')">DA Audit Tool</button>
+            <button class="tab-btn" onclick="switchTab('mapTab')">Inspection Map</button>
+        </nav>
+
+        <!-- COMPLIANCE EVALUATOR TAB -->
+        <div id="complianceTab" class="tab-content active">
+            <div class="glass-card">
+                <header>
+                    <h1>MPLADS Compliance</h1>
+                    <p class="subtitle">AI-Powered Annexure II Project Evaluator</p>
+                </header>
+
+                <div class="input-group">
+                    <label>Project Description</label>
+                    <textarea id="description" placeholder="Enter the detailed project description here..." rows="4"></textarea>
+                </div>
+
+                <button id="evaluateBtn" onclick="evaluateDescription()">
+                    <span>Evaluate Project</span>
+                    <div class="loading-overlay"><div class="spinner"></div></div>
+                </button>
+            </div>
+
+            <div id="complianceResult" class="glass-card result-card">
+                <div class="result-header">
+                    <h2 style="margin: 0; font-size: 1.5rem;">Evaluation Result</h2>
+                    <div id="statusBadge" class="status-badge"></div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Compliance Status</span>
+                        <span id="complianceVal" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Estimated Cost</span>
+                        <span id="costVal" class="detail-value">-</span>
+                    </div>
+                </div>
+
+                <div id="clauseSection" class="detail-item" style="margin-bottom: 1.5rem; display: none;">
+                    <span class="detail-label">Violated Clause</span>
+                    <span id="clauseVal" class="detail-value val-danger"></span>
+                </div>
+
+                <div id="explanationSection" class="explanation" style="display: none;">
+                    <span class="detail-label">Explanation for MP</span>
+                    <p id="explanationVal" style="margin-top: 0.5rem; color: var(--text-main); font-weight: 500;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DA AUDIT TOOL TAB -->
+        <div id="auditTab" class="tab-content">
+            <div class="glass-card">
+                <header>
+                    <h1>DA Inflation Audit</h1>
+                    <p class="subtitle">Detect Systemic Cost Inflation by Implementing Agencies</p>
+                </header>
+
+                <div class="input-group">
+                    <label>Implementing District Authority (IDA)</label>
+                    <select id="idaDropdown">
+                        <option value="">Loading agencies...</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Work Description</label>
+                    <textarea id="auditDescription" placeholder="Enter project description..." rows="3"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Sanctioned Amount (₹)</label>
+                    <input type="number" id="sanctionedAmount" placeholder="e.g. 1500000" />
+                </div>
+
+                <button id="auditBtn" onclick="runAudit()">
+                    <span>Run Inflation Audit</span>
+                    <div class="loading-overlay"><div class="spinner"></div></div>
+                </button>
+            </div>
+
+            <div id="auditResult" class="glass-card result-card">
+                <div class="result-header">
+                    <h2 style="margin: 0; font-size: 1.5rem;">Audit Findings</h2>
+                    <div id="auditStatusBadge" class="status-badge"></div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Sanctioned vs Estimated</span>
+                        <span class="detail-value">
+                            <span id="auditSanctionedVal"></span> vs <span id="auditEstimatedVal"></span>
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Cost Deviation</span>
+                        <span id="auditDevVal" class="detail-value">-</span>
+                    </div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="detail-item" style="grid-column: span 2;">
+                        <span class="detail-label">Project Level Verdict</span>
+                        <span id="auditVerdictVal" class="detail-value">-</span>
+                    </div>
+                </div>
+                
+                <div class="explanation">
+                    <div class="result-grid" style="margin-bottom: 0;">
+                        <div class="detail-item">
+                            <span class="detail-label">Agency Historical Z-Score</span>
+                            <span id="agencyZScore" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Agency Historical Median Dev</span>
+                            <span id="agencyMedianDev" class="detail-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INSPECTION MAP TAB -->
+        <div id="mapTab" class="tab-content">
+            <div class="glass-card" style="padding: 1.5rem;">
+                <header style="margin-bottom: 1rem;">
+                    <h1>Inspection Itinerary</h1>
+                    <p class="subtitle">Mysore District - Spatially Clustered Field Audits</p>
+                </header>
+                <div id="itineraryMap" style="width: 100%; height: 500px; border-radius: 16px; border: 1px solid var(--glass-border); z-index: 1;"></div>
+                
+                <div class="result-grid" style="margin-top: 1.5rem; margin-bottom: 0;">
+                    <div class="detail-item">
+                        <span class="detail-label" style="color: #ef4444;">🔴 Anchors</span>
+                        <span class="detail-value" style="font-size: 0.9rem;">High-Risk Projects</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label" style="color: #10b981;">🟢 Surprises</span>
+                        <span class="detail-value" style="font-size: 0.9rem;">10km Radius Checks</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label" style="color: #f59e0b;">🟡 Quota</span>
+                        <span class="detail-value" style="font-size: 0.9rem;">Random Fillers</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        let mapInitialized = false;
+        let inspectionMap = null;
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if(tabId === 'auditTab' && document.getElementById('idaDropdown').options.length <= 1) {
+                fetchAgencies();
+            }
+            
+            if(tabId === 'mapTab') {
+                setTimeout(() => {
+                    if (inspectionMap) inspectionMap.invalidateSize();
+                    loadMapData();
+                }, 100);
+            }
+        }
+
+        async function loadMapData() {
+            if (mapInitialized) return;
+            
+            try {
+                // Initialize map centered roughly on Mysuru
+                inspectionMap = L.map('itineraryMap').setView([12.30, 76.65], 11);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(inspectionMap);
+                
+                const response = await fetch('/api/v1/projects/map');
+                const data = await response.json();
+                
+                // Add markers
+                data.markers.forEach(marker => {
+                    let color = 'blue';
+                    if (marker.role.includes('ANCHOR')) color = 'red';
+                    else if (marker.role.includes('SURPRISE')) color = 'green';
+                    else if (marker.role.includes('RANDOM')) color = 'orange';
+                    
+                    const circle = L.circleMarker([marker.latitude, marker.longitude], {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.7,
+                        radius: 8
+                    }).addTo(inspectionMap);
+                    
+                    const costStr = marker.cost ? '₹' + marker.cost.toLocaleString('en-IN') : 'N/A';
+                    
+                    circle.bindPopup(`
+                        <strong style="color: #1e1b4b;">${marker.role}</strong><br>
+                        <b style="color: #1e1b4b;">ID:</b> <span style="color: #1e1b4b;">${marker.work_id}</span><br>
+                        <b style="color: #1e1b4b;">Cost:</b> <span style="color: #1e1b4b;">${costStr}</span><br>
+                        <hr style="margin:5px 0; border-color: #ccc;">
+                        <span style="font-size: 0.85rem; color: #1e1b4b;">${marker.description}</span>
+                    `);
+                });
+                
+                mapInitialized = true;
+            } catch (error) {
+                console.error("Failed to load map data:", error);
+                document.getElementById('itineraryMap').innerHTML = '<div style="padding: 2rem; text-align: center; color: black;">Error loading map data. Ensure backend is running.</div>';
+            }
+        }
+
+        // Fetch Agencies on load for DA Audit Tool
+        async function fetchAgencies() {
+            try {
+                const response = await fetch('/api/v1/agencies');
+                const data = await response.json();
+                const dropdown = document.getElementById('idaDropdown');
+                dropdown.innerHTML = '';
+                
+                data.agencies.forEach(agency => {
+                    const option = document.createElement('option');
+                    option.value = agency;
+                    option.textContent = agency;
+                    dropdown.appendChild(option);
+                });
+            } catch (e) {
+                console.error("Failed to fetch agencies:", e);
+                document.getElementById('idaDropdown').innerHTML = '<option value="">Error loading agencies</option>';
+            }
+        }
+
+        // Evaluate Compliance
+        async function evaluateDescription() {
+            const descInput = document.getElementById('description').value;
+            const btn = document.getElementById('evaluateBtn');
+            const resultCard = document.getElementById('complianceResult');
+            
+            if (!descInput.trim()) return alert("Please enter a description.");
+
+            btn.classList.add('loading');
+            resultCard.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/v1/projects/evaluate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ work_description: descInput, district: "MYSURU" })
+                });
+
+                const data = await response.json();
+
+                const statusBadge = document.getElementById('statusBadge');
+                statusBadge.textContent = data.compliance_status;
+                statusBadge.className = `status-badge ${data.compliance_status === 'FLAGGED' ? 'status-flagged' : 'status-cleared'}`;
+                
+                document.getElementById('complianceVal').textContent = data.compliance_status || 'N/A';
+                
+                const costVal = document.getElementById('costVal');
+                if (data.estimated_cost_inr != null) {
+                    costVal.textContent = '₹' + data.estimated_cost_inr.toLocaleString('en-IN');
+                } else {
+                    costVal.textContent = 'N/A';
+                }
+                
+                if (data.violation_clause) {
+                    document.getElementById('clauseSection').style.display = 'flex';
+                    document.getElementById('clauseVal').textContent = data.violation_clause;
+                } else {
+                    document.getElementById('clauseSection').style.display = 'none';
+                }
+
+                if (data.explanation) {
+                    document.getElementById('explanationSection').style.display = 'block';
+                    document.getElementById('explanationVal').textContent = data.explanation;
+                } else {
+                    document.getElementById('explanationSection').style.display = 'none';
+                }
+
+                resultCard.style.display = 'block';
+            } catch (error) {
+                alert("An error occurred. Check backend logs.");
+            } finally {
+                btn.classList.remove('loading');
+            }
+        }
+
+        // Run DA Audit
+        async function runAudit() {
+            const desc = document.getElementById('auditDescription').value;
+            const amount = document.getElementById('sanctionedAmount').value;
+            const ida = document.getElementById('idaDropdown').value;
+            
+            if (!desc || !amount || !ida) return alert("Please fill in all fields.");
+
+            const btn = document.getElementById('auditBtn');
+            const resultCard = document.getElementById('auditResult');
+            
+            btn.classList.add('loading');
+            resultCard.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/v1/projects/audit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        work_description: desc,
+                        sanctioned_amount: parseFloat(amount),
+                        ida: ida
+                    })
+                });
+
+                const data = await response.json();
+                if(data.status === "ERROR") {
+                    alert("Error: " + data.error);
+                    return;
+                }
+
+                // Render Results
+                const statusBadge = document.getElementById('auditStatusBadge');
+                statusBadge.textContent = data.flagged ? 'SYSTEMIC INFLATION FLAGGED' : 'AGENCY CLEARED';
+                statusBadge.className = `status-badge ${data.flagged ? 'status-flagged' : 'status-cleared'}`;
+
+                document.getElementById('auditSanctionedVal').textContent = '₹' + parseFloat(amount).toLocaleString('en-IN');
+                document.getElementById('auditEstimatedVal').textContent = '₹' + (data.estimated_cost_inr || 0).toLocaleString('en-IN');
+
+                const devPct = (data.deviation_pct * 100).toFixed(2);
+                const devElem = document.getElementById('auditDevVal');
+                devElem.textContent = `${devPct > 0 ? '+' : ''}${devPct}%`;
+                devElem.className = 'detail-value ' + (data.deviation_pct > 0.2 ? 'val-danger' : (data.deviation_pct < -0.1 ? 'val-success' : 'val-warning'));
+
+                const verdictElem = document.getElementById('auditVerdictVal');
+                verdictElem.textContent = data.verdict;
+                if (data.deviation_pct < 0) {
+                    verdictElem.className = 'detail-value val-success';
+                } else if (data.deviation_pct <= 0.2) {
+                    verdictElem.className = 'detail-value val-warning';
+                } else {
+                    verdictElem.className = 'detail-value val-danger';
+                }
+
+                document.getElementById('agencyZScore').textContent = data.agency_mod_z_score.toFixed(2);
+                document.getElementById('agencyZScore').className = 'detail-value ' + (data.agency_mod_z_score > 2.5 ? 'val-danger' : 'val-success');
+                
+                document.getElementById('agencyMedianDev').textContent = (data.agency_median_deviation * 100).toFixed(2) + '%';
+
+                resultCard.style.display = 'block';
+
+            } catch (error) {
+                alert("An error occurred while auditing.");
+            } finally {
+                btn.classList.remove('loading');
+            }
+        }
+        
+        // Auto-fetch on page load if audit tab is active by default (it's not)
+        // fetchAgencies();
+    </script>
+</body>
+</html>
