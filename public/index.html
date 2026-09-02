@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MARGA | Official MPLADS Monitoring & Analytics Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Tricolor Accent Top Stripe -->
+  <div class="gov-stripe"></div>
+
+  <!-- Full-Bleed Fixed Background Animation Canvas (Scrubbed on Window Scroll) -->
+  <div class="sequence-canvas-fixed">
+    <canvas id="sequenceCanvas"></canvas>
+    <div class="sequence-dark-vignette"></div>
+  </div>
+
+  <!-- Floating Sequence HUD (Bottom Right) -->
+  <div class="sequence-hud-capsule" id="sequenceHUD">
+    <span class="hud-dot"></span>
+    <span id="storyFrameHUD">FRAME 1 / 480 • 0%</span>
+    <div class="hud-bar-track">
+      <div class="hud-bar-fill" id="storyFrameHUDBar"></div>
+    </div>
+  </div>
+
+  <!-- Sticky Top Civic Header (Clean, Sleek Text Navigation) -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="#home" class="brand-identity" onclick="window.switchTab('story')">
+        <div class="brand-emblem">M</div>
+        <div class="brand-text">
+          <h1>MARGA</h1>
+          <p>MPLADS • MoSPI Govt of India</p>
+        </div>
+      </a>
+
+      <!-- Sleek Top Navigation Links -->
+      <nav class="site-nav">
+        <a href="#home" class="nav-item active" data-tab="story">Home</a>
+        <a href="#mospi" class="nav-item" data-tab="overview">National Command</a>
+        <a href="#da" class="nav-item" data-tab="search-work">DA Sanctions</a>
+        <a href="#ia" class="nav-item" data-tab="camera">IA Field Camera</a>
+        <a href="#mp" class="nav-item" data-tab="mps">MP Portfolios</a>
+        <a href="#states" class="nav-item" data-tab="states">36 States</a>
+        <a href="#compare" class="nav-item" data-tab="compare">Comparison Engine</a>
+      </nav>
+
+      <!-- Right Header Actions -->
+      <div class="header-actions">
+        <button id="btnOpenAuthModal" class="auth-header-btn" onclick="window.openAuthModal()" title="Statutory Role Authentication">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="headerAuthLabel">Role Auth / Login</span>
+        </button>
+        <div class="search-pill">
+          <input type="text" id="globalWorkSearch" placeholder="Search Work ID (e.g. 134703)...">
+          <button id="btnSearchGlobal" title="Search Work">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </button>
+        </div>
+        <span class="status-badge" id="mongoClusterBadge" title="MongoDB Atlas Cluster0: mplads_db">
+          <span class="dot" style="background:#10b981;"></span>
+          <span id="mongoClusterText">Atlas Cluster0: Connected</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content Container -->
+  <main class="page-container">
+
+    <!-- ====================================================================
+         TAB 1: SCROLLYTELLING STORYBOARD & DEDICATED STAKEHOLDERS
+         ==================================================================== -->
+    <section id="tab-story" class="tab-panel active">
+      <div class="storyboard-track">
+
+        <!-- Chapter 1: The National Mandate -->
+        <article class="story-editorial-card">
+          <span class="story-badge">National Governance Mandate</span>
+          <h2>Transforming Public Capital into Verified Ground-Truth Infrastructure</h2>
+          <p>
+            Under the <strong>Members of Parliament Local Area Development Scheme (MPLADS)</strong>, over <strong>₹ 11,681+ Crore</strong> of public capital is deployed to fund community schools, drinking water plants, health clinics, and rural roads. <strong>MARGA</strong> delivers end-to-end evidence assurance across all 774 parliamentary constituencies.
+          </p>
+          <div class="metrics-strip">
+            <div class="metric-item">
+              <span class="metric-num">₹ 11,681 Cr</span>
+              <span class="metric-label">Allocated Capital</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-num">₹ 3,984 Cr</span>
+              <span class="metric-label">Audited Expenditure</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-num">774 MPs</span>
+              <span class="metric-label">Constituencies</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-num">34.1%</span>
+              <span class="metric-label">National Utilization</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12px; color:var(--text-muted);">↓ Scroll down to scrub the 480-frame visual journey</span>
+            <button class="btn-primary-action" onclick="window.switchTab('overview')">
+              Launch Live National Dashboard &rarr;
+            </button>
+          </div>
+        </article>
+
+        <!-- Chapter 2: The Core Challenge & Connected Pipeline -->
+        <article class="story-editorial-card">
+          <span class="story-badge" style="background:rgba(245,158,11,0.12); color:#fbbf24; border-color:rgba(245,158,11,0.25);">
+            The Structural Gap
+          </span>
+          <h2>Eliminating the Multi-Department Paperwork Bottleneck</h2>
+          <p>
+            Historically, MPLADS projects suffered from unspent fund lapses, lack of geotagged visual proof, manual paperwork between MPs and District Authorities, and zero central oversight on project milestones. MARGA establishes a unified, tamper-proof verification chain:
+          </p>
+          <div class="workflow-diagram">
+            <div class="workflow-node">
+              <span class="node-step">Node 1</span>
+              <div class="node-title" style="color:var(--civic-blue);">MP Recommendation</div>
+              <div class="node-desc">Constituency priority selection</div>
+            </div>
+            <div class="workflow-node">
+              <span class="node-step">Node 2</span>
+              <div class="node-title" style="color:var(--civic-amber);">DA Sanction (IDA)</div>
+              <div class="node-desc">Guideline &amp; feasibility audit</div>
+            </div>
+            <div class="workflow-node">
+              <span class="node-step">Node 3</span>
+              <div class="node-title" style="color:var(--civic-emerald);">IA Field Execution</div>
+              <div class="node-desc">GPS photo &amp; 30-day inspection</div>
+            </div>
+            <div class="workflow-node">
+              <span class="node-step">Node 4</span>
+              <div class="node-title" style="color:var(--civic-purple);">MoSPI Command</div>
+              <div class="node-desc">1% audit sampling &amp; anomalies</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Chapter 3: Dedicated Stakeholder Roles (Direct Clickable Portals) -->
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+          <div class="stakeholder-section-title">
+            <h2>Dedicated Stakeholder Portals</h2>
+            <p>Purpose-built governance portals tailored to eliminate friction for every key participant in the MPLADS ecosystem.</p>
+          </div>
+
+          <div class="stakeholder-grid">
+            <!-- ROLE 1: MP PORTAL -->
+            <div class="stakeholder-card mp" onclick="window.openPortal('MP')" style="cursor:pointer;">
+              <div class="card-header-flex">
+                <div class="role-tagline">
+                  <h3>MP Portal • Member of Parliament</h3>
+                  <span>Lok Sabha &amp; Rajya Sabha Portfolios</span>
+                </div>
+                <span class="role-pill">774 MPs</span>
+              </div>
+              <div class="rationale-box">
+                <span class="rationale-heading">Core Value for MPs:</span>
+                <ul class="rationale-list">
+                  <li><strong>Zero Unspent Lapses:</strong> Real-time alerts before financial deadlines to maximize ₹5 Cr annual allocations.</li>
+                  <li><strong>Single-Pane Visibility:</strong> Real-time status on sanctioned vs. pending constituency projects.</li>
+                  <li><strong>Verified Proof for Voters:</strong> Ground-level geotagged photos to demonstrate concrete local progress.</li>
+                </ul>
+              </div>
+              <div class="portal-actions">
+                <button class="btn-role-action" onclick="event.stopPropagation(); window.openPortal('MP')">
+                  <span>Launch MP Statutory Portal</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ROLE 2: DA PORTAL -->
+            <div class="stakeholder-card da" onclick="window.openPortal('DA')" style="cursor:pointer;">
+              <div class="card-header-flex">
+                <div class="role-tagline">
+                  <h3>DA Portal • District Authority</h3>
+                  <span>District Magistrate / District Collector (IDA)</span>
+                </div>
+                <span class="role-pill">Regulatory</span>
+              </div>
+              <div class="rationale-box">
+                <span class="rationale-heading">Core Value for DAs:</span>
+                <ul class="rationale-list">
+                  <li><strong>Automated Rulebook Checks:</strong> Immediate verification against prohibited items under 2023 guidelines.</li>
+                  <li><strong>Accelerated Sanction Times:</strong> Eliminates physical paper movement across departments.</li>
+                  <li><strong>Duplicate Prevention:</strong> Geolocation distance checks prevent sanctioning redundant assets.</li>
+                </ul>
+              </div>
+              <div class="portal-actions">
+                <button class="btn-role-action" onclick="event.stopPropagation(); window.openPortal('DA')">
+                  <span>Launch DA Statutory Portal</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ROLE 3: IA PORTAL -->
+            <div class="stakeholder-card ia" onclick="window.openPortal('IA')" style="cursor:pointer;">
+              <div class="card-header-flex">
+                <div class="role-tagline">
+                  <h3>IA Portal • Implementing Agency</h3>
+                  <span>Field Engineers, BDOs &amp; Executing Officers</span>
+                </div>
+                <span class="role-pill">Field Audit</span>
+              </div>
+              <div class="rationale-box">
+                <span class="rationale-heading">Core Value for IAs:</span>
+                <ul class="rationale-list">
+                  <li><strong>1-Tap Geotagged Camera:</strong> Automatically captures GPS coordinates and immutable timestamps.</li>
+                  <li><strong>Automated 30-Day Reports:</strong> Self-populates monthly cycle inspection reports submitted on the 10th.</li>
+                  <li><strong>Protects Honest Officers:</strong> Incontrovertible cryptographic proof protects against false allegations.</li>
+                </ul>
+              </div>
+              <div class="portal-actions">
+                <button class="btn-role-action" onclick="event.stopPropagation(); window.openPortal('IA')">
+                  <span>Launch IA Statutory Portal</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ROLE 4: MOSPI PORTAL -->
+            <div class="stakeholder-card mospi" onclick="window.openPortal('MOSPI')" style="cursor:pointer;">
+              <div class="card-header-flex">
+                <div class="role-tagline">
+                  <h3>MoSPI Portal • Ministry Command</h3>
+                  <span>Central Oversight &amp; Nodal Verification</span>
+                </div>
+                <span class="role-pill">National</span>
+              </div>
+              <div class="rationale-box">
+                <span class="rationale-heading">Core Value for MoSPI:</span>
+                <ul class="rationale-list">
+                  <li><strong>Pan-India Macro Dashboard:</strong> Real-time rankings across all 36 States &amp; Union Territories.</li>
+                  <li><strong>1% Nodal Repeat Work Audit:</strong> Automated statistical sampling for high-frequency repeated works.</li>
+                  <li><strong>Predictive Anomaly Detection:</strong> Flags cost escalations and expenditure-vs-progress gaps.</li>
+                </ul>
+              </div>
+              <div class="portal-actions">
+                <button class="btn-role-action" onclick="event.stopPropagation(); window.openPortal('MOSPI')">
+                  <span>Launch MoSPI Statutory Portal</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ROLE 5: STATE PORTAL -->
+            <div class="stakeholder-card state" onclick="window.openPortal('STATE')" style="cursor:pointer;">
+              <div class="card-header-flex">
+                <div class="role-tagline">
+                  <h3>State Portal • Nodal Department</h3>
+                  <span>State Planning &amp; Monitoring Division</span>
+                </div>
+                <span class="role-pill" style="background:rgba(56,189,248,0.12); color:#38bdf8; border-color:rgba(56,189,248,0.25);">36 States / UTs</span>
+              </div>
+              <div class="rationale-box">
+                <span class="rationale-heading">Core Value for State Nodal Authorities:</span>
+                <ul class="rationale-list">
+                  <li><strong>Inter-District Performance Benchmarking:</strong> Real-time ranking across all district administrations.</li>
+                  <li><strong>Lapse Prevention Monitoring:</strong> Early warning indicators for unspent constituency allocations.</li>
+                  <li><strong>Consolidated State Utilization:</strong> Real-time metrics for State Planning Commission audits.</li>
+                </ul>
+              </div>
+              <div class="portal-actions">
+                <button class="btn-role-action" onclick="event.stopPropagation(); window.openPortal('STATE')">
+                  <span>Launch State Statutory Portal</span>
+                  <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chapter 4: Full Exploration Gateway -->
+        <article class="story-editorial-card" style="text-align:center;">
+          <h2>Enter Dedicated Statutory Governance Portals</h2>
+          <p>Access official government datasets covering 774 MPs, 36 States/UTs, and thousands of indexed projects across purpose-built portals.</p>
+          <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+            <button class="btn-primary-action" onclick="window.switchTab('overview')">
+              MoSPI Portal
+            </button>
+            <button class="btn-primary-action" style="background:var(--bg-surface-elevated); border:1px solid var(--border-medium);" onclick="window.switchTab('mps')">
+              MP Portal (774 MPs)
+            </button>
+            <button class="btn-primary-action" style="background:var(--bg-surface-elevated); border:1px solid var(--border-medium);" onclick="window.switchTab('search-work')">
+              DA Portal (Sanctions Review)
+            </button>
+            <button class="btn-primary-action" style="background:var(--bg-surface-elevated); border:1px solid var(--border-medium);" onclick="window.switchTab('camera')">
+              IA Portal (Field Camera)
+            </button>
+            <button class="btn-primary-action" style="background:var(--bg-surface-elevated); border:1px solid var(--border-medium);" onclick="window.switchTab('states')">
+              State Portal (36 States)
+            </button>
+            <button class="btn-primary-action" style="background:var(--bg-surface-elevated); border:1px solid var(--border-medium);" onclick="window.switchTab('compare')">
+              Comparison Engine
+            </button>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 2: NATIONAL OVERVIEW DASHBOARD
+         ==================================================================== -->
+    <section id="tab-overview" class="tab-panel">
+      <div class="view-header">
+        <a href="#home" class="view-breadcrumb" onclick="window.switchTab('story')">&larr; Back to Home</a>
+        <h2>MoSPI Portal — Ministry Command &amp; Performance Overview</h2>
+        <p>Pan-India macroeconomic oversight, fund utilization velocity, and 1% statistical audit sampling across 774 constituencies.</p>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-title">Total MPs Monitored</span>
+          <span class="kpi-val" id="statTotalMPs">774</span>
+          <span class="kpi-sub">Lok Sabha &amp; Rajya Sabha</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Total Allocated Funds</span>
+          <span class="kpi-val" id="statTotalSanctioned">₹ 11,681.90 Cr</span>
+          <span class="kpi-sub">Official MoSPI Allocation</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Total Utilized Expenditure</span>
+          <span class="kpi-val" id="statTotalDisbursed">₹ 3,984.77 Cr</span>
+          <span class="kpi-sub">Verified Government Payments</span>
+        </div>
+        <div class="kpi-card highlight">
+          <span class="kpi-title">National Utilization</span>
+          <span class="kpi-val" id="statAvgUtil" style="color:#60a5fa;">34.1%</span>
+          <span class="kpi-sub">43,899 of 86,982 Works Completed</span>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="margin-top:-8px;">
+        <div class="kpi-card">
+          <span class="kpi-title">Recommended Works</span>
+          <span class="kpi-val" style="font-size:22px;" id="statTotalWorks">86,982</span>
+          <span class="kpi-sub">Across All 36 States/UTs</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Completed Works</span>
+          <span class="kpi-val" style="font-size:22px; color:#34d399;" id="statCompletedWorks">43,899</span>
+          <span class="kpi-sub">Completion Rate: 50.5%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Audited Transactions</span>
+          <span class="kpi-val" style="font-size:22px;" id="statTotalTx">108,362</span>
+          <span class="kpi-sub">Direct PFMS Records</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">Coverage</span>
+          <span class="kpi-val" style="font-size:22px;">36</span>
+          <span class="kpi-sub">States &amp; Union Territories</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 3: SEARCH WORK ID & DISTRICT AUTHORITY REVIEW
+         ==================================================================== -->
+    <section id="tab-search-work" class="tab-panel">
+      <div class="view-header">
+        <a href="#home" class="view-breadcrumb" onclick="window.switchTab('story')">&larr; Back to Home</a>
+        <h2>DA Portal — District Authority Sanctions &amp; Feasibility Review</h2>
+        <p>Full statutory lifecycle verification: MP recommendation audit, 2023 prohibited item checks, and administrative sanctions.</p>
+      </div>
+
+      <div style="margin-bottom:16px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span style="font-size:12px; color:var(--text-muted);">Quick Inspect Official Works:</span>
+        <button class="filter-btn" onclick="document.getElementById('inputWorkId').value='134703'; searchWork();">Work 134703 (Andhra)</button>
+        <button class="filter-btn" onclick="document.getElementById('inputWorkId').value='175556'; searchWork();">Work 175556 (Andaman)</button>
+        <button class="filter-btn" onclick="document.getElementById('inputWorkId').value='183102'; searchWork();">Work 183102 (Port Blair)</button>
+        <button class="filter-btn" onclick="document.getElementById('inputWorkId').value='135593'; searchWork();">Work 135593 (East Godavari)</button>
+      </div>
+
+      <div class="toolbar-bar">
+        <div style="display:flex; gap:8px; flex:1; max-width:600px;">
+          <input type="text" id="inputWorkId" class="filter-input" style="flex:1;" placeholder="Enter Official Work ID (e.g. 134703)...">
+          <button id="btnSearchWorkDetail" class="btn-primary-action">Inspect Work</button>
+        </div>
+      </div>
+
+      <div id="workDetailContainer">
+        <p style="color:var(--text-muted); font-size:13px;">Enter an official Work ID or select one of the quick samples above to inspect the complete audit trail.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 4: MP PORTFOLIOS (774 MPs - ALL ACTUAL DATA)
+         ==================================================================== -->
+    <section id="tab-mps" class="tab-panel">
+      <div class="view-header">
+        <a href="#home" class="view-breadcrumb" onclick="window.switchTab('story')">&larr; Back to Home</a>
+        <h2>MP Portal — Member of Parliament Portfolio Management</h2>
+        <p>Search and review real fund utilization across all 774 Lok Sabha and Rajya Sabha representatives.</p>
+      </div>
+
+      <div class="toolbar-bar">
+        <div class="filter-group" id="mpHouseButtons">
+          <button class="filter-btn active" data-house="ALL">All Houses</button>
+          <button class="filter-btn" data-house="Lok Sabha">Lok Sabha</button>
+          <button class="filter-btn" data-house="Rajya Sabha">Rajya Sabha</button>
+        </div>
+        <div class="filter-group" id="mpTierButtons">
+          <button class="filter-btn active" data-tier="ALL">All Tiers</button>
+          <button class="filter-btn" data-tier="High Performer">High (&ge; 75%)</button>
+          <button class="filter-btn" data-tier="Average">Average (50-74%)</button>
+          <button class="filter-btn" data-tier="Needs Improvement">Needs Improvement (&lt; 50%)</button>
+        </div>
+        <input type="text" id="mpSearchInput" class="filter-input" placeholder="Search MP name, constituency, state..." style="width:280px;">
+      </div>
+
+      <div style="margin-bottom:12px; font-size:12px; color:var(--text-muted);" id="mpCountSummary">
+        Loading official MP summary records...
+      </div>
+
+      <div class="mp-cards-grid" id="mpCardsContainer">
+        <!-- Injected via JavaScript with actual dataset records -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 5: 36 STATES & UTs LEADERBOARD
+         ==================================================================== -->
+    <section id="tab-states" class="tab-panel">
+      <div class="view-header">
+        <a href="#home" class="view-breadcrumb" onclick="window.switchTab('story')">&larr; Back to Home</a>
+        <h2>State Portal — 36 States &amp; Union Territories Leaderboard</h2>
+        <p>Ranked by real utilization percentage and project completion aggregated across all parliamentary constituencies.</p>
+      </div>
+
+      <div class="toolbar-bar">
+        <input type="text" id="stateSearchInput" class="filter-input" placeholder="Filter states or UTs..." style="width:280px;">
+      </div>
+
+      <div class="table-container">
+        <table class="civic-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>State / Union Territory</th>
+              <th>Type</th>
+              <th>MPs</th>
+              <th>Allocated Capital</th>
+              <th>Utilized Expenditure</th>
+              <th>Utilization Rate</th>
+              <th>Completed Works</th>
+            </tr>
+          </thead>
+          <tbody id="statesTableBody">
+            <!-- Injected via JavaScript with actual dataset records -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 6: HARDCODED COMPARISON ENGINE (MATHEMATICAL DETERMINISTIC LOGIC)
+         ==================================================================== -->
+    <section id="tab-compare" class="tab-panel">
+      <div class="view-header">
+        <a href="#home" class="view-breadcrumb" onclick="window.switchTab('story')">&larr; Back to Home</a>
+        <h2>Comparative Analytics Engine</h2>
+        <p>Deterministic mathematical comparison based on verified official government datasets.</p>
+      </div>
+
+      <div class="toolbar-bar">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <label style="font-size:13px; color:var(--text-secondary); font-weight:600;">Comparison Dataset:</label>
+          <select id="compareType" class="filter-input" style="background:var(--bg-surface);">
+            <option value="state">States Capital Utilization Benchmark (vs National 34.1%)</option>
+            <option value="category">Sectoral Capital Allocation &amp; Project Distribution</option>
+            <option value="distribution">MP Fund Utilization Distribution (774 MPs Histogram)</option>
+          </select>
+          <button id="btnRunCompare" class="btn-primary-action">Compute Comparison</button>
+        </div>
+      </div>
+
+      <div class="table-container" style="padding:24px;" id="compareChartArea">
+        <!-- Hardcoded SVG/HTML Graph Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 7: IA FIELD CAMERA (ACTUAL DATA FROM DATASET)
+         ==================================================================== -->
+    <section id="tab-camera" class="tab-panel">
+      <div class="view-header">
+        <a href="#home" class="view-breadcrumb" onclick="window.switchTab('story')">&larr; Back to Home</a>
+        <h2>IA Portal — Implementing Agency Field Geotag Camera &amp; Inspection</h2>
+        <p>Conduct 30-day physical inspection audits with live GPS coordinates on real official works.</p>
+      </div>
+
+      <!-- Real Dataset Work Selector Banner -->
+      <div class="ia-dataset-banner">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:13px; color:#fff;">Select Active Official Work to Inspect (from /dataset):</strong>
+          <span style="font-size:11.5px; color:var(--civic-emerald);">● Live Official Work Records Available</span>
+        </div>
+        <div class="ia-works-picker" id="iaQuickWorksList">
+          <!-- Filled dynamically with real in-progress works from dataset -->
+        </div>
+      </div>
+
+      <div class="camera-panel-layout">
+        <!-- Simulated Viewfinder & Real Work Live Preview -->
+        <div class="viewfinder-card">
+          <div class="viewfinder-crosshairs"></div>
+          <div style="z-index:2; text-align:center; width:100%; padding:0 16px;">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--civic-emerald); margin-bottom:8px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <div id="viewfinderWorkInfo" style="background:rgba(14, 20, 32, 0.85); border:1px solid var(--border-subtle); border-radius:8px; padding:12px; text-align:left; margin-top:8px;">
+              <span style="font-size:11px; text-transform:uppercase; color:var(--civic-emerald); font-weight:700;">Target Inspection Asset:</span>
+              <h4 id="vfWorkTitle" style="font-size:13px; color:#fff; margin-top:2px;">Work 134703 - CC Drain Construction</h4>
+              <p id="vfWorkLocation" style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">CHITTOOR, ANDHRA PRADESH</p>
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:6px; color:#cbd5e1;">
+                <span>Sanctioned: <strong id="vfWorkCost">₹ 5.00 Lakh</strong></span>
+                <span>Current Progress: <strong id="vfWorkProg" style="color:#60a5fa;">92%</strong></span>
+              </div>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:10px;">Viewfinder ready. Auto-detect GPS coordinates and submit 30-day report.</p>
+          </div>
+        </div>
+
+        <!-- Submission Form -->
+        <div class="camera-form-box">
+          <form id="inspectionForm">
+            <div class="form-grid-2">
+              <div class="form-field">
+                <label>Official Work ID (Selected from Dataset)</label>
+                <input type="text" id="camWorkId" placeholder="e.g. 134703" value="134703" required>
+              </div>
+              <div class="form-field">
+                <label>Field Officer / IA ID</label>
+                <input type="text" id="camIaId" placeholder="e.g. IA-FIELD-ENG-01" required>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-field">
+                <label>Physical Progress (%)</label>
+                <input type="number" id="camProgress" min="0" max="100" placeholder="0 - 100" value="95" required>
+              </div>
+              <div class="form-field">
+                <label>Reporting Period (Due 10th)</label>
+                <input type="text" id="camPeriod" placeholder="e.g. Cycle-2026-09" value="Cycle-2026-09" required>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:12px; color:var(--text-muted);">Tamper-Proof Geotagging:</span>
+              <button type="button" id="btnDetectGPS" class="filter-btn" style="font-size:11px; padding:3px 10px; border-color:var(--civic-emerald); color:var(--civic-emerald);">
+                📍 Auto-Detect Live Device GPS
+              </button>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-field">
+                <label>Latitude</label>
+                <input type="text" id="camLat" placeholder="Latitude (click Auto-Detect)" required>
+              </div>
+              <div class="form-field">
+                <label>Longitude</label>
+                <input type="text" id="camLng" placeholder="Longitude (click Auto-Detect)" required>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>Field Observations &amp; Verification Remarks</label>
+              <textarea id="camRemarks" rows="3" placeholder="Enter on-site physical observations, structural milestone verification, and photographic notes..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary-action">Submit 30-Day Inspection &amp; Save to Database</button>
+          </form>
+          <div id="cameraFeedback" style="margin-top:14px; font-size:13px;"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       STATUTORY ROLE AUTHENTICATION (AUTH) MODAL
+       ==================================================================== -->
+  <div id="authModal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this) window.closeAuthModal();">
+    <div class="auth-modal-card">
+      <div class="auth-modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="auth-modal-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <h3>Statutory Role Authentication</h3>
+            <p>MARGA MPLADS Official Digital Operating Layer</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="window.closeAuthModal()">&times;</button>
+      </div>
+
+      <!-- Role Selection Tabs -->
+      <div class="auth-role-tabs" id="authRoleTabs">
+        <button type="button" class="auth-role-tab active" data-role="MP" onclick="window.selectAuthRole('MP')">
+          <strong>MP</strong>
+          <span>Parliament</span>
+        </button>
+        <button type="button" class="auth-role-tab" data-role="DA" onclick="window.selectAuthRole('DA')">
+          <strong>DA</strong>
+          <span>District</span>
+        </button>
+        <button type="button" class="auth-role-tab" data-role="IA" onclick="window.selectAuthRole('IA')">
+          <strong>IA</strong>
+          <span>Field Audit</span>
+        </button>
+        <button type="button" class="auth-role-tab" data-role="STATE" onclick="window.selectAuthRole('STATE')">
+          <strong>State</strong>
+          <span>Nodal Dept</span>
+        </button>
+        <button type="button" class="auth-role-tab" data-role="MOSPI" onclick="window.selectAuthRole('MOSPI')">
+          <strong>MoSPI</strong>
+          <span>Central GoI</span>
+        </button>
+      </div>
+
+      <!-- Active Persona Summary Box -->
+      <div class="auth-persona-box" id="authPersonaBox">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <span class="auth-persona-badge" id="authBadgeText">Lok Sabha / Rajya Sabha Representative</span>
+            <h4 id="authOfficialName">Hon'ble MP Portfolio Officer</h4>
+            <p id="authOfficialDept">Parliament House, New Delhi</p>
+          </div>
+          <span class="auth-reg-pill" id="authRegId">REG-MP-LS-042</span>
+        </div>
+      </div>
+
+      <!-- Auth Form -->
+      <form id="statutoryAuthForm" onsubmit="window.submitAuthForm(event)">
+        <div class="form-field" style="margin-bottom:12px;">
+          <label>Officer / Delegate Name</label>
+          <input type="text" id="authInputName" required>
+        </div>
+        <div class="form-grid-2" style="margin-bottom:16px;">
+          <div class="form-field">
+            <label>Registration ID</label>
+            <input type="text" id="authInputRegId" required>
+          </div>
+          <div class="form-field">
+            <label>Statutory Security PIN</label>
+            <input type="password" id="authInputPassword" value="marga@2026" required>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button type="button" class="filter-btn" onclick="window.closeAuthModal()">Cancel</button>
+          <button type="submit" class="btn-primary-action" id="btnConfirmAuth">
+            Authenticate &amp; Launch Portal &rarr;
+          </button>
+        </div>
+      </form>
+
+      <div id="authStatusToast" style="display:none; margin-top:12px; padding:8px 12px; border-radius:6px; font-size:12px;"></div>
+    </div>
+  </div>
+
+  <!-- Client JavaScript -->
+  <script src="storySequence.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
