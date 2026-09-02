@@ -1,0 +1,19 @@
+{
+  "watch": [
+    "src"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "data/**",
+    "dataset/**",
+    "uploads/**",
+    "public/**",
+    "sequence/**",
+    "marga-y/**",
+    "node_modules/**",
+    "*.log",
+    "*.txt"
+  ],
+  "delay": "1000",
+  "exec": "node src/server.js"
+}
