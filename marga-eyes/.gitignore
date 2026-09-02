@@ -1,0 +1,11 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+web/server/node_modules/
+web/server/uploads/*
+!web/server/uploads/.gitkeep
