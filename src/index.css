@@ -1,0 +1,459 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #f1f5f9;
+    background-color: #0b0f19;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code, kbd, samp, pre {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+}
+
+/* Official India Flag Tricolor Stripe */
+.gov-tricolor-stripe {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #138808 66.6%, #138808 100%);
+}
+
+/* ==========================================================================
+   MARGA — Editorial Storyline Design System (Clean, Authentic, Centered)
+   ========================================================================== */
+
+.m-story {
+  position: relative;
+  width: 100%;
+}
+
+/* Floating Vertical Rail */
+.m-story-rail {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #111827;
+  padding: 12px 9px;
+  border-radius: 9999px;
+  border: 1px solid #1f2937;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.m-story-rail__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: #4b5563;
+  border: 1.5px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.m-story-rail__dot:hover {
+  background: #9ca3af;
+  transform: scale(1.2);
+}
+
+.m-story-rail__dot.active {
+  width: 11px;
+  height: 11px;
+  background: #2563eb;
+  border-color: #ffffff;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+  transform: scale(1.25);
+}
+
+/* Centered Scene Layout */
+.m-story-scene {
+  min-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4.5rem 1.5rem;
+  position: relative;
+  z-index: 20;
+}
+
+/* Centered Inner Story Card */
+.m-story-inner {
+  max-width: 50rem;
+  width: 100%;
+  margin: 0 auto;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 1.5rem;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: border-color 0.2s ease;
+}
+
+.m-story-inner:hover {
+  border-color: #334155;
+}
+
+/* Editorial Chapter Badge */
+.m-story-chapter {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #38bdf8;
+  background: #0c2135;
+  border: 1px solid #1e3a5f;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  margin-bottom: 1.5rem;
+}
+
+/* Subtitle / Headline */
+.m-story-subtitle {
+  font-size: 2.1rem;
+  line-height: 1.25;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.1rem;
+  max-width: 42rem;
+}
+
+@media (min-width: 768px) {
+  .m-story-subtitle {
+    font-size: 2.5rem;
+  }
+}
+
+/* Clean Solid Highlight (No Tacky Rainbow Glows) */
+.m-highlight {
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+.m-story-copy {
+  font-size: 1.025rem;
+  line-height: 1.65;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+  max-width: 38rem;
+}
+
+/* Centered Stat Grid */
+.m-story-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 38rem;
+  margin-bottom: 2.25rem;
+}
+
+.m-story-stat {
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  border-radius: 0.85rem;
+  padding: 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.25rem;
+}
+
+.m-story-stat__n {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #f8fafc;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.m-story-stat__k {
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+/* Comparative Progress Track Pair */
+.m-story-pair {
+  width: 100%;
+  max-width: 38rem;
+  margin-bottom: 2.25rem;
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.m-story-pair__track {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.m-story-pair__row {
+  display: grid;
+  grid-template-columns: 85px 1fr 60px;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.m-story-pair__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.m-story-pair__bar {
+  height: 10px;
+  background: #1e293b;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.m-story-pair__bar span {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: #2563eb;
+  transition: width 0.5s ease;
+}
+
+.m-story-pair__bar span.warn {
+  background: #e11d48;
+}
+
+.m-story-pair__num {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f8fafc;
+  font-family: 'IBM Plex Mono', monospace;
+  text-align: right;
+}
+
+/* Traceable Signals & Flags (Clean Human Editorial Cards) */
+.m-story-flags {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 38rem;
+  margin-bottom: 2.25rem;
+  text-align: left;
+}
+
+.m-story-flag {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  border-radius: 0.75rem;
+  padding: 0.95rem 1.15rem;
+  font-size: 0.86rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Refined Primary Action Button */
+.m-story-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid #3b82f6;
+}
+
+.m-story-cta:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+/* Cover Scene Special Styles */
+.m-story-cover__title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .m-story-cover__title {
+    font-size: 4.5rem;
+  }
+}
+
+.m-story-lead {
+  font-size: 1.15rem;
+  line-height: 1.65;
+  color: #cbd5e1;
+  max-width: 36rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.m-story-cover__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.m-story-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.m-story-scrollcue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.m-story-scrollcue:hover {
+  color: #ffffff;
+  border-color: #64748b;
+  background: #1e293b;
+}
+
+/* Scene 5 Act Cards Grid */
+.m-story-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: 44rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  .m-story-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.m-story-action {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  padding: 1.25rem;
+  border-radius: 0.85rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-align: left;
+}
+
+.m-story-action:hover {
+  border-color: #2563eb;
+  background: #0d1527;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.m-story-action__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 0.65rem;
+  background: #1e293b;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  shrink: 0;
+}
+
+.m-story-action__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.m-story-action__label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.m-story-action__desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.m-story-action__arrow {
+  color: #64748b;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.m-story-action:hover .m-story-action__arrow {
+  color: #38bdf8;
+  transform: translateX(3px);
+}
+
+.m-story-endline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+  color: #94a3b8;
+  margin-top: 1rem;
+  text-align: center;
+}
