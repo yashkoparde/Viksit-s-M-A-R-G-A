@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Large local ML training outputs & duplicate working data
+MARGA ML/output/
+MARGA ML/Karnatak live work/
+MARGA ML/mplads_recommended_works_2026-09-02.csv
+
+# Uploads / Uploaded photos and reports
+uploads/
+uploads/photos/
+uploads/reports/
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
