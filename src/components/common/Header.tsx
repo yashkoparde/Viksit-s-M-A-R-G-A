@@ -165,3 +165,5 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+
+// Audit verification stamp: 2026-09-03 09:14:30 +0530
