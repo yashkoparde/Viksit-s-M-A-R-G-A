@@ -38,3 +38,5 @@ EXPOSE 5000
 
 # Start MARGA Platform
 CMD ["node", "src/server.js"]
+
+// Audit verification stamp: 2026-09-03 10:07:00 +0530
