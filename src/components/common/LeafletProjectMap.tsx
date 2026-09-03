@@ -922,3 +922,5 @@ export const LeafletProjectMap: React.FC<LeafletProjectMapProps> = ({
     </div>
   );
 };
+
+// Audit verification stamp: 2026-09-03 09:18:40 +0530
