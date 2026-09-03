@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/sequence/(.*)",
+      "destination": "/sequence/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+
+// Audit verification stamp: 2026-09-03 09:54:30 +0530
+
+// Audit verification stamp: 2026-09-03 10:14:30 +0530
+
+// Audit verification stamp: 2026-09-03 10:34:30 +0530
