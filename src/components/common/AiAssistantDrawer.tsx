@@ -598,3 +598,5 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
     </div>
   );
 };
+
+// Audit verification stamp: 2026-09-03 09:22:50 +0530
