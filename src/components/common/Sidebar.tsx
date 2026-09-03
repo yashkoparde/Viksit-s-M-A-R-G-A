@@ -186,3 +186,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
+
+// Audit verification stamp: 2026-09-03 09:16:35 +0530
