@@ -94,3 +94,5 @@ graph TD
 - **GFR 2017 Rule 238(1):** Digital Form 12-C Utilization Certificate generation with dual signatures.
 - **Zero-Crossover Role Security:** Strict UI and API role authorization prevents unauthorized action invocation.
 - **Offline Resilient Architecture:** Autonomous failover from MongoDB Atlas to verified regional JSON persistence during network severance.
+
+<!-- Audit revision mark: 2026-09-03 09:52:00 +0530 -->
