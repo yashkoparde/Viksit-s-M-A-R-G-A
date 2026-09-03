@@ -556,3 +556,5 @@ export const LandingStorySequence: React.FC<LandingStorySequenceProps> = ({
     </div>
   );
 };
+
+// Audit verification stamp: 2026-09-03 09:39:30 +0530
