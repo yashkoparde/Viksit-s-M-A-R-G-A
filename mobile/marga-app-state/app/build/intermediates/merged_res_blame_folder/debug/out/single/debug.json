@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.marga.app.state.app-merged_res-45:/mipmap_ic_launcher.xml.flat",
+        "source": "com.marga.app.state.app-main-47:/mipmap/ic_launcher.xml"
+    },
+    {
+        "merged": "com.marga.app.state.app-merged_res-45:/mipmap_ic_launcher_round.xml.flat",
+        "source": "com.marga.app.state.app-main-47:/mipmap/ic_launcher_round.xml"
+    }
+]

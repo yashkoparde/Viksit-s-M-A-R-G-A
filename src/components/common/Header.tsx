@@ -63,9 +63,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-base font-extrabold tracking-wide text-slate-900">
                 MARGA
               </span>
-              <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                MPLADS
-              </span>
               <span className="hidden sm:inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">
                 {activeDef.shortTitle}
               </span>
@@ -75,17 +72,6 @@ export const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
         </div>
-
-        {/* Quick Return to Landing Story Sequence */}
-        {onOpenStorySequence && (
-          <button
-            onClick={onOpenStorySequence}
-            className="hidden md:inline-flex items-center gap-1 text-xs font-medium text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 px-2.5 py-1 rounded-md border border-sky-200 transition-colors cursor-pointer"
-            title="Return to Scrollytelling Sequence"
-          >
-            ← Story Sequence
-          </button>
-        )}
 
         {/* Geography Context Badge */}
         <div className="hidden lg:flex items-center text-xs text-slate-500 border-l border-slate-200 pl-3 h-5">

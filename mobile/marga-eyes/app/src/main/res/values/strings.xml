@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Marga-eyes</string>
+    <string name="camera_permission_required">Camera permission is required to capture geotagged photos.</string>
+    <string name="location_permission_required">Location permission is required for GPS tagging.</string>
+</resources>

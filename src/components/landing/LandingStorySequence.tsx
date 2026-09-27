@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Role, AuthUser } from '../../types';
 import { 
-  ShieldCheck, 
   Landmark, 
   Building2, 
   Compass, 
@@ -9,16 +8,29 @@ import {
   Layers, 
   ArrowRight, 
   CheckCircle2, 
-  Sparkles, 
   LogOut, 
-  Play, 
   Eye, 
-  Cpu,
-  ChevronDown
+  Smartphone, 
+  Server, 
+  BrainCircuit, 
+  MapPin, 
+  Search,
+  Check,
+  AlertTriangle,
+  XCircle,
+  Sparkles,
+  Workflow,
+  Scan,
+  TrendingUp,
+  ShieldAlert,
+  Bot,
+  Radar,
+  Gauge
 } from 'lucide-react';
 
 interface LandingStorySequenceProps {
   onSelectRoleForAuth: (role: Role) => void;
+  onOpenPublicPortal: () => void;
   currentUser: AuthUser | null;
   onProceedToDashboard: () => void;
   onLogout: () => void;
@@ -26,20 +38,74 @@ interface LandingStorySequenceProps {
 
 export const LandingStorySequence: React.FC<LandingStorySequenceProps> = ({
   onSelectRoleForAuth,
+  onOpenPublicPortal,
   currentUser,
   onProceedToDashboard,
   onLogout,
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [manifest, setManifest] = useState<string[]>([]);
-  const [currentFrame, setCurrentFrame] = useState<number>(0);
-  const [isReady, setIsReady] = useState<boolean>(false);
+  // Background Scrollytelling Inspection Sequence State
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [bgFrame, setBgFrame] = useState<number>(0);
+  const [isPlayingSequence, setIsPlayingSequence] = useState<boolean>(false);
+  const [hasScrolled, setHasScrolled] = useState<boolean>(false);
   const imageCache = useRef<Map<number, HTMLImageElement>>(new Map());
   const manifestRef = useRef<string[]>([]);
-  const isTicking = useRef<boolean>(false);
-  const currentFrameRef = useRef<number>(0);
 
-  // Fetch sequence manifest
+  // Selected Ecosystem Pillar
+  const [activePillar, setActivePillar] = useState<'portal' | 'eyes' | 'brain'>('brain');
+
+  // Interactive Pathway State (Steps 1 to 4)
+  const [activePathwayStep, setActivePathwayStep] = useState<number>(1);
+  const [testBudget, setTestBudget] = useState<number>(45); // in Lakhs
+  const [isPrivateLand, setIsPrivateLand] = useState<boolean>(false);
+  const [selectedBrainModel, setSelectedBrainModel] = useState<number>(0);
+
+  // Frame drawer helper
+  const drawImageFit = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, img: HTMLImageElement) => {
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    if (!iw || !ih || cw === 0 || ch === 0) return;
+
+    const zoomFactor = 1.35;
+    const baseScale = Math.max(cw / iw, ch / ih);
+    const scale = baseScale * zoomFactor;
+    const nw = iw * scale;
+    const nh = ih * scale;
+    const cx = (cw - nw) / 2;
+    const cy = (ch - nh) / 2;
+
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.drawImage(img, cx, cy, nw, nh);
+  };
+
+  // Render on background sequence canvas
+  const renderBgFrame = useCallback((frameIdx: number) => {
+    const canvas = bgCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const m = manifestRef.current;
+    if (!m || m.length === 0) return;
+    const safeIdx = Math.max(0, Math.min(frameIdx, m.length - 1));
+    const fileName = m[safeIdx];
+    if (!fileName) return;
+
+    if (imageCache.current.has(safeIdx)) {
+      drawImageFit(ctx, canvas, imageCache.current.get(safeIdx)!);
+      return;
+    }
+
+    const img = new Image();
+    img.src = `/sequence/${fileName}`;
+    img.onload = () => {
+      imageCache.current.set(safeIdx, img);
+      drawImageFit(ctx, canvas, img);
+    };
+  }, []);
+
   useEffect(() => {
     let active = true;
     const fetchManifest = async () => {
@@ -49,516 +115,770 @@ export const LandingStorySequence: React.FC<LandingStorySequenceProps> = ({
           const data = await res.json();
           if (active && Array.isArray(data) && data.length > 0) {
             manifestRef.current = data;
-            setManifest(data);
+            renderBgFrame(0);
             return;
           }
         }
-      } catch (err) {
-        console.warn('Using fallback sequence list', err);
-      }
-
-      // Default fallback
-      const fallback = Array.from({ length: 480 }, (_, i) => 
-        `frame_${String(i).padStart(3, '0')}_delay-0.04s.gif`
+      } catch {}
+      const fallback = Array.from({ length: 251 }, (_, i) => 
+        `frame_${String(i + 40).padStart(3, '0')}_delay-0.04s.gif`
       );
       if (active) {
         manifestRef.current = fallback;
-        setManifest(fallback);
+        renderBgFrame(0);
       }
     };
     fetchManifest();
     return () => { active = false; };
-  }, []);
+  }, [renderBgFrame]);
 
-  // Nearest frame fallback finder
-  const findNearest = useCallback((index: number): HTMLImageElement | null => {
-    if (imageCache.current.has(index)) return imageCache.current.get(index)!;
-    for (let dist = 1; dist < 80; dist++) {
-      if (imageCache.current.has(index - dist)) return imageCache.current.get(index - dist)!;
-      if (imageCache.current.has(index + dist)) return imageCache.current.get(index + dist)!;
-    }
-    return imageCache.current.get(0) || null;
-  }, []);
-
-  // High-performance image render using 5-arg drawImage (avoiding source slice bugs with GIFs)
-  const renderImage = useCallback((img: HTMLImageElement) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const cw = canvas.width;
-    const ch = canvas.height;
-    const iw = img.naturalWidth || img.width;
-    const ih = img.naturalHeight || img.height;
-    if (!iw || !ih || cw === 0 || ch === 0) return;
-
-    // Cover aspect ratio
-    const scale = Math.max(cw / iw, ch / ih);
-    const nw = iw * scale;
-    const nh = ih * scale;
-    const cx = (cw - nw) / 2;
-    const cy = (ch - nh) / 2;
-
-    ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(img, cx, cy, nw, nh);
-  }, []);
-
-  // Preload single image helper
-  const preloadImage = useCallback((index: number): Promise<HTMLImageElement | null> => {
-    if (imageCache.current.has(index)) {
-      return Promise.resolve(imageCache.current.get(index)!);
-    }
-    const frames = manifestRef.current;
-    if (!frames.length || index < 0 || index >= frames.length) {
-      return Promise.resolve(null);
-    }
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.src = `/sequence/${frames[index]}`;
-      img.onload = () => {
-        imageCache.current.set(index, img);
-        resolve(img);
-      };
-      img.onerror = () => {
-        resolve(null);
-      };
-    });
-  }, []);
-
-  // Draw frame with nearest fallback
-  const drawFrame = useCallback((index: number) => {
-    const directImg = imageCache.current.get(index);
-    if (directImg) {
-      renderImage(directImg);
-    } else {
-      const fallback = findNearest(index);
-      if (fallback) {
-        renderImage(fallback);
-      }
-      preloadImage(index).then((loaded) => {
-        if (loaded && currentFrameRef.current === index) {
-          renderImage(loaded);
-        }
-      });
-    }
-  }, [findNearest, preloadImage, renderImage]);
-
-  // Main canvas initialization and scroll listener
   useEffect(() => {
-    if (!manifest.length || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-
-    const resizeCanvas = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      drawFrame(currentFrameRef.current);
-    };
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // Preload first 20 frames immediately for instant smoothness
-    preloadImage(0).then((img) => {
-      if (img) {
-        renderImage(img);
-        setIsReady(true);
+    const handleScroll = () => {
+      if (window.scrollY > 10) setHasScrolled(true);
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight <= 0) return;
+      const progress = Math.min(Math.max(window.scrollY / totalHeight, 0), 1);
+      const m = manifestRef.current;
+      if (m && m.length > 0) {
+        const targetFrame = Math.floor(progress * (m.length - 1));
+        setBgFrame(targetFrame);
+        renderBgFrame(targetFrame);
       }
-    });
+    };
 
-    for (let i = 1; i < Math.min(manifest.length, 30); i++) {
-      preloadImage(i);
-    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [renderBgFrame]);
 
-    // Scroll scrubbing listener
-    const onScroll = () => {
-      if (isTicking.current) return;
-      isTicking.current = true;
-
-      requestAnimationFrame(() => {
-        const docHeight = Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight
-        );
-        const winHeight = window.innerHeight;
-        const maxScroll = Math.max(1, docHeight - winHeight);
-        const scrollFraction = Math.min(1, Math.max(0, window.scrollY / maxScroll));
-        
-        const total = manifestRef.current.length || 1;
-        const targetFrame = Math.min(total - 1, Math.floor(scrollFraction * total));
-
-        currentFrameRef.current = targetFrame;
-        setCurrentFrame(targetFrame);
-        drawFrame(targetFrame);
-
-        // Preload next 10 forward frames
-        for (let f = targetFrame + 1; f < Math.min(total, targetFrame + 10); f++) {
-          if (!imageCache.current.has(f)) preloadImage(f);
-        }
-
-        isTicking.current = false;
+  useEffect(() => {
+    if (!isPlayingSequence && !hasScrolled) return;
+    const interval = setInterval(() => {
+      const m = manifestRef.current;
+      if (!m || m.length === 0) return;
+      setBgFrame((prev) => {
+        const next = (prev + 1) % m.length;
+        renderBgFrame(next);
+        return next;
       });
-    };
+    }, 90);
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => clearInterval(interval);
+  }, [isPlayingSequence, hasScrolled, renderBgFrame]);
 
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, [manifest, drawFrame, preloadImage, renderImage]);
-
-  const rolesList: {
-    id: Role;
-    name: string;
-    badge: string;
-    desc: string;
-    icon: React.ReactNode;
-    badgeColor: string;
-    borderColor: string;
-  }[] = [
+  // 5 Specialized Models in MARGA Brain
+  const brainModels = [
     {
-      id: 'MP',
-      name: 'Member of Parliament',
-      badge: 'Lok Sabha / Rajya Sabha',
-      desc: 'Formulate community infrastructure recommendations up to ₹5.00 Cr annual statutory quota. Zero execution authority.',
-      icon: <Landmark className="w-5 h-5 text-indigo-400" />,
-      badgeColor: 'bg-indigo-900/60 text-indigo-300 border-indigo-700/60',
-      borderColor: 'hover:border-indigo-500/80',
-    },
-    {
-      id: 'DA',
-      name: 'District Authority',
-      badge: 'District Collector / DM',
-      desc: 'Scrutinize MP recommendations, grant administrative sanctions, and conduct mandatory 10% annual field verification.',
-      icon: <Building2 className="w-5 h-5 text-amber-400" />,
-      badgeColor: 'bg-amber-900/60 text-amber-300 border-amber-700/60',
-      borderColor: 'hover:border-amber-500/80',
-    },
-    {
-      id: 'IA',
-      name: 'Implementing Agency',
-      badge: 'PWD / CPWD / ZP',
-      desc: 'On-ground technical execution, Measurement Book entries, and mandatory 100% field inspection returns with CameraX.',
+      num: '01',
+      title: 'Inspection Routing & Priority',
+      type: 'Anomaly Risk Scoring',
+      desc: 'Solves DA 10% inspection coverage by scoring anomalies and routing Collector to high-risk sites.',
       icon: <Compass className="w-5 h-5 text-emerald-400" />,
-      badgeColor: 'bg-emerald-900/60 text-emerald-300 border-emerald-700/60',
-      borderColor: 'hover:border-emerald-500/80',
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10 border-emerald-500/30'
     },
     {
-      id: 'STATE',
-      name: 'State Nodal Dept',
-      badge: 'Planning & Rural Dev',
-      desc: 'State-level oversight, inter-district benchmarking radar, unspent balance management, and 1% sample physical audits.',
-      icon: <Scale className="w-5 h-5 text-blue-400" />,
-      badgeColor: 'bg-blue-900/60 text-blue-300 border-blue-700/60',
-      borderColor: 'hover:border-blue-500/80',
+      num: '02',
+      title: 'Cost & Delay Predictor',
+      type: 'Regression Model',
+      desc: 'Benchmarks proposals against regional PWD baselines to forecast project delivery and detect overbilling.',
+      icon: <TrendingUp className="w-5 h-5 text-rose-400" />,
+      color: 'text-rose-400',
+      bg: 'bg-rose-500/10 border-rose-500/30'
     },
     {
-      id: 'MOSPI',
-      name: 'MoSPI Central Ministry',
-      badge: 'GoI National Apex',
-      desc: 'Apex governance, tranche release approvals, GFR 2017 Rule 238 Form 12-C UCs, and 1% Risk-Based Meta-Audits (RBA).',
-      icon: <ShieldCheck className="w-5 h-5 text-purple-400" />,
-      badgeColor: 'bg-purple-900/60 text-purple-300 border-purple-700/60',
-      borderColor: 'hover:border-purple-500/80',
+      num: '03',
+      title: 'Duplicate Radius Detector',
+      type: 'Geospatial Model',
+      desc: 'Scans existing projects within 500m to prevent double-funding and duplicate sanctions.',
+      icon: <Radar className="w-5 h-5 text-purple-400" />,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10 border-purple-500/30'
+    },
+    {
+      num: '04',
+      title: 'Computer Vision & Geotag Lock',
+      type: 'Computer Vision',
+      desc: 'Validates satellite coordinates on live CameraX photos and strictly stops phone gallery uploads.',
+      icon: <Scan className="w-5 h-5 text-sky-400" />,
+      color: 'text-sky-400',
+      bg: 'bg-sky-500/10 border-sky-500/30'
+    },
+    {
+      num: '05',
+      title: 'Rule & Clause Classifier',
+      type: 'NLP Model',
+      desc: 'Instantly screens proposal text to block ineligible or unauthorized works before submission.',
+      icon: <ShieldAlert className="w-5 h-5 text-amber-400" />,
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10 border-amber-500/30'
+    }
+  ];
+
+  // 5 Features in MARGA Portal
+  const portalFeatures = [
+    { num: '01', title: '5-Tier Role Access', desc: 'Isolates MP recommendations, DA sanctions, and IA execution seamlessly.' },
+    { num: '02', title: '₹5 Cr Quota Tracker', desc: 'Live countdown prevents fund lapsing and accelerates capital velocity.' },
+    { num: '03', title: 'Cryptographic Audit Trail', desc: 'SHA-256 sequential hashing makes every decision tamper-proof.' },
+    { num: '04', title: '1-Click UC Generation', desc: 'Automated Measurement Book and GFR Form 12-C certificates.' },
+    { num: '05', title: 'Public Transparency Hub', desc: 'Open citizen access with zero login needed to audit local works.' }
+  ];
+
+  // 5 Capabilities in MARGA Eyes
+  const eyesFeatures = [
+    { num: '01', title: 'Live GPS Hardware Lock', desc: 'Direct satellite coordinate stamp burned onto the image file.' },
+    { num: '02', title: 'Anti-Gallery Enforcement', desc: 'Strict live-only capture guarantees physical presence on ground.' },
+    { num: '03', title: 'Milestone Progress Proofs', desc: 'Before-work, during-work, and post-completion verified logs.' },
+    { num: '04', title: 'Offline-First Field Sync', desc: 'Saves drafts on site and automatically uploads when online.' },
+    { num: '05', title: 'Physical vs Financial Sync', desc: 'Locks payments until physical progress milestone is certified.' }
+  ];
+
+  const portals = [
+    {
+      id: 'MP' as Role,
+      title: 'Parliament',
+      role: 'Member of Parliament',
+      desc: 'Recommend community works and track constituency progress.',
+      icon: <Landmark className="w-6 h-6 text-amber-400" />,
+      color: 'border-amber-500/30 hover:border-amber-400',
+      btn: 'Authorize MP',
+      pin: 'PIN: 1111',
+    },
+    {
+      id: 'DA' as Role,
+      title: 'District',
+      role: 'District Authority',
+      desc: 'Verify public land, issue sanctions, and audit project quality.',
+      icon: <Building2 className="w-6 h-6 text-blue-400" />,
+      color: 'border-blue-500/30 hover:border-blue-400',
+      btn: 'Authorize District',
+      pin: 'PIN: 2222',
+    },
+    {
+      id: 'IA' as Role,
+      title: 'Field Engine',
+      role: 'Implementing Agency',
+      desc: 'Execute construction on site and record live geotagged photos.',
+      icon: <Compass className="w-6 h-6 text-emerald-400" />,
+      color: 'border-emerald-500/30 hover:border-emerald-400',
+      btn: 'Authorize Agency',
+      pin: 'PIN: 3333',
+    },
+    {
+      id: 'STATE' as Role,
+      title: 'State Nodal',
+      role: 'State Department',
+      desc: 'Monitor district performance and prevent funds from expiring.',
+      icon: <Layers className="w-6 h-6 text-purple-400" />,
+      color: 'border-purple-500/30 hover:border-purple-400',
+      btn: 'Authorize State',
+      pin: 'PIN: 4444',
+    },
+    {
+      id: 'MOSPI' as Role,
+      title: 'Central HQ',
+      role: 'MoSPI Ministry',
+      desc: 'Apex macro monitor across all 774 parliamentary portfolios.',
+      icon: <Scale className="w-6 h-6 text-rose-400" />,
+      color: 'border-rose-500/30 hover:border-rose-400',
+      btn: 'Authorize Central',
+      pin: 'PIN: 5555',
     },
   ];
 
   return (
-    <div className="relative min-h-[450vh] bg-slate-950 text-slate-100 font-sans selection:bg-indigo-600 selection:text-white">
-      {/* 480-Frame Fixed Canvas Background */}
-      <div className="fixed inset-0 w-full h-full pointer-events-none z-0">
+    <div className="relative min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950">
+      
+      {/* Background Cinematic Canvas */}
+      <div className="fixed inset-0 pointer-events-none z-0">
         <canvas
-          ref={canvasRef}
-          className="w-full h-full object-cover"
+          ref={bgCanvasRef}
+          width={1280}
+          height={720}
+          className="w-full h-full object-cover filter contrast-[1.08] brightness-[0.75] saturate-[1.15]"
         />
-        {/* Subtle cinematic gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/40 to-slate-950/90 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(8,11,18,0.3)_0%,_rgba(8,11,18,0.85)_75%,_rgba(8,11,18,0.98)_100%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-slate-950/80 pointer-events-none" />
       </div>
 
-      {/* Tricolor Government Header Stripe */}
-      <div className="fixed top-0 inset-x-0 h-1 z-50 bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
-
-      {/* Floating HUD Scrubbing Indicator */}
-      <div className="fixed bottom-6 right-6 z-50 bg-slate-900/90 backdrop-blur-xl border border-slate-700/80 px-4 py-2.5 rounded-full text-xs font-mono text-slate-200 shadow-2xl flex items-center gap-3">
-        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-        <span className="font-semibold tracking-wider text-slate-300">STORYBOARD HUD</span>
-        <span className="text-slate-600">|</span>
-        <span className="text-emerald-400 font-bold">
-          FRAME {String(currentFrame + 1).padStart(3, '0')} / {manifest.length || 480}
-        </span>
-        <span className="text-slate-500">
-          ({Math.round(((currentFrame + 1) / (manifest.length || 480)) * 100)}%)
-        </span>
-      </div>
-
-      {/* Sticky Civic Header */}
-      <header className="fixed top-1 inset-x-0 z-40 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/80 px-6 py-3.5 shadow-md">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      {/* Top Navigation */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl bg-slate-950/85 border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-white to-emerald-600 flex items-center justify-center p-0.5 shadow-lg">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <Layers className="w-5 h-5 text-amber-400" />
-              </div>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-lg flex items-center justify-center font-mono shadow-lg shadow-emerald-500/20">
+              M
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-black tracking-widest text-white uppercase">M.A.R.G.A.</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                  MoSPI MPLADS 2023
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-                Monitoring, Audit, Review & Governance Architecture
-              </p>
-            </div>
+            <span className="text-xl font-black text-white tracking-widest font-mono">MARGA</span>
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={onOpenPublicPortal}
+              className="px-4 py-2 text-sm font-bold rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Eye className="w-4 h-4 text-emerald-400" />
+              <span>Public Gateway</span>
+            </button>
+
             {currentUser ? (
-              <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 px-3.5 py-1.5 rounded-full shadow-inner">
-                <span className="text-xs text-slate-300">
-                  Active: <strong className="text-white">{currentUser.name}</strong> ({currentUser.role})
+              <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl p-1.5 pl-4">
+                <span className="text-xs text-slate-300 font-bold">
+                  {currentUser.name}
                 </span>
                 <button
                   onClick={onProceedToDashboard}
-                  className="px-3.5 py-1 text-xs font-bold rounded-full bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md cursor-pointer"
+                  className="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer"
                 >
-                  Enter Portal →
+                  Enter Portal
                 </button>
                 <button
                   onClick={onLogout}
-                  className="text-slate-400 hover:text-rose-400 transition-colors p-1"
-                  title="Logout"
+                  className="p-2 text-slate-400 hover:text-rose-400 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2.5">
-                <button
-                  onClick={() => onSelectRoleForAuth('MP')}
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg flex items-center gap-1.5 cursor-pointer"
-                >
-                  <span>Role Login / Auth</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-                <a
-                  href="#roles-section"
-                  className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all hidden md:flex items-center gap-1.5"
-                >
-                  <span>5 Portals</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                </a>
-              </div>
+              <a
+                href="#portals"
+                className="px-5 py-2.5 text-sm font-bold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all shadow-lg flex items-center gap-2 cursor-pointer font-sans"
+              >
+                <span>Select Portal</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
             )}
           </div>
         </div>
       </header>
 
-      {/* Main Scrollytelling Panels */}
-      <main className="relative z-10 pt-36 pb-32 max-w-7xl mx-auto px-6">
-        {/* Hero Section */}
-        <section className="min-h-[85vh] flex flex-col justify-center max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-semibold mb-6 w-fit shadow-lg backdrop-blur-md">
-            <Sparkles className="w-4 h-4" />
-            Viksit Bharat 2047 · Digital Governance & Transparency
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-            Transparent, Verified <br />
-            <span className="bg-gradient-to-r from-amber-400 via-orange-300 to-emerald-400 bg-clip-text text-transparent">
-              Constituency Infrastructure
-            </span>
-          </h1>
-
-          <p className="mt-6 text-base sm:text-lg text-slate-200 leading-relaxed max-w-2xl font-normal drop-shadow-sm">
-            MARGA transforms public capital deployment across all 774 parliamentary constituencies through a statutory, 
-            multi-tier governance architecture with CameraX native geotagging, 3-layer NLP compliance, and LightGBM civil works cost validation.
-          </p>
-
-          {/* National Live Metrics Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 p-5 rounded-2xl bg-slate-900/80 border border-slate-800/90 backdrop-blur-xl shadow-2xl">
-            <div>
-              <span className="text-2xl font-black text-white">774</span>
-              <p className="text-xs text-slate-400 mt-1">MPs Tracked (LS + RS)</p>
-            </div>
-            <div>
-              <span className="text-2xl font-black text-emerald-400">₹ 4,000 Cr</span>
-              <p className="text-xs text-slate-400 mt-1">Annual Scheme Outlay</p>
-            </div>
-            <div>
-              <span className="text-2xl font-black text-amber-400">130,882</span>
-              <p className="text-xs text-slate-400 mt-1">Official Works Registered</p>
-            </div>
-            <div>
-              <span className="text-2xl font-black text-indigo-400">36</span>
-              <p className="text-xs text-slate-400 mt-1">States & UTs Covered</p>
-            </div>
-          </div>
-
-          {/* Call to Actions */}
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <button
-              onClick={() => onSelectRoleForAuth('MP')}
-              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-slate-950 font-black text-sm transition-all shadow-xl hover:shadow-2xl hover:scale-[1.02] flex items-center gap-2.5 cursor-pointer"
-            >
-              <Play className="w-4 h-4 fill-slate-950" />
-              <span>Launch Statutory Portal Gateway</span>
-            </button>
-            <a
-              href="#roles-section"
-              className="px-5 py-3.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-semibold transition-all flex items-center gap-2"
-            >
-              <span>Explore 5 Roles</span>
-              <ArrowRight className="w-4 h-4 text-slate-400" />
-            </a>
-            <span className="text-xs text-slate-400 font-medium">
-              ↓ Scroll down to scrub the 480-frame visual inspection story
-            </span>
-          </div>
-        </section>
-
-        {/* Story Chapter 1: The Mandate & Separation of Powers */}
-        <section className="min-h-[75vh] flex flex-col justify-center max-w-2xl my-32 p-8 sm:p-10 rounded-3xl bg-slate-900/85 border border-slate-800/90 backdrop-blur-xl shadow-2xl">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">
-            <ShieldCheck className="w-4 h-4" />
-            Chapter I: Statutory Mandate
-          </div>
-          <h2 className="text-3xl font-black text-white tracking-tight">
-            Strict Multi-Tier Separation of Powers
-          </h2>
-          <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-            In compliance with the <strong>February 2023 MoSPI MPLADS Guidelines</strong>, MARGA strictly enforces operational 
-            checks-and-balances. MPs exclusively formulate priority recommendations up to ₹5.00 Cr annually with zero execution power. 
-            District Authorities conduct mandatory <strong>10% field inspection audits</strong>, while Implementing Agencies fulfill 
-            <strong>100% field return obligations</strong> with hardware geotagged evidence.
-          </p>
-          <div className="mt-6 space-y-3 text-xs text-slate-200">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Zero-crossover role security preventing unauthorized action invocation</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Autonomous MongoDB Atlas connection pooling with persistent JSON fallback</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>GFR 2017 Rule 238(1) Form 12-C utilization certificates & unspent balance ledger</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Story Chapter 2: MARGA Eyes Native CameraX Geotagging */}
-        <section className="min-h-[75vh] flex flex-col justify-center max-w-2xl my-32 p-8 sm:p-10 rounded-3xl bg-slate-900/85 border border-slate-800/90 backdrop-blur-xl shadow-2xl ml-auto">
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">
-            <Eye className="w-4 h-4" />
-            Chapter II: MARGA Eyes Mobile
-          </div>
-          <h2 className="text-3xl font-black text-white tracking-tight">
-            Cryptographic Field Ground Truth
-          </h2>
-          <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-            The companion native Android Kotlin application (<code className="text-emerald-400 font-mono">marga-eyes/</code>) eliminates ghost projects. 
-            Junior engineers capture inspection evidence via CameraX, where sub-10m FusedLocation GPS coordinates, 
-            statutory watermark plate banners, and hardware EXIF headers are permanently burned directly into the image matrix before transmission.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-6">
-            <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
-              <strong className="text-white block mb-1">Burnt Watermark Plate</strong>
-              <span className="text-slate-400">Timestamp, inspector ID, work ID, and coordinates burned directly onto pixels.</span>
-            </div>
-            <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs">
-              <strong className="text-white block mb-1">Hardware EXIF Injection</strong>
-              <span className="text-slate-400">Standardized GPS latitude, longitude, and altitude tags injected at capture.</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Story Chapter 3: Cognitive AI Brain & Cost Regressor */}
-        <section className="min-h-[75vh] flex flex-col justify-center max-w-2xl my-32 p-8 sm:p-10 rounded-3xl bg-slate-900/85 border border-slate-800/90 backdrop-blur-xl shadow-2xl">
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-3">
-            <Cpu className="w-4 h-4" />
-            Chapter III: Cognitive AI Brain
-          </div>
-          <h2 className="text-3xl font-black text-white tracking-tight">
-            Predictive Cost Validation & Annexure-II Compliance
-          </h2>
-          <p className="mt-4 text-sm text-slate-300 leading-relaxed">
-            The FastAPI intelligence service combines a 3-layer NLP compliance engine (Deterministic Regex + SentenceTransformers + spaCy NER) 
-            to block prohibited works under Annexure-II clauses (commercial complexes, religious structures, recurring maintenance costs). 
-            A LightGBM gradient boosting regressor computes fair cost bands with TreeSHAP waterfall explanations to flag DA cost inflation.
-          </p>
-        </section>
-
-        {/* Role Portal Gateway Section */}
-        <section id="roles-section" className="min-h-screen flex flex-col justify-center pt-20">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-bold mb-3">
-              Role-Based Authentication Gateway
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              Select Your Statutory Authority
+      {/* Main Content */}
+      <main className="relative z-10 pt-32 pb-24 max-w-7xl mx-auto px-6 space-y-32">
+        {/* ========================================================================= */}
+        {/* THE MARGA ECOSYSTEM (INTERACTIVE PILLARS + 5 MODELS SHOWCASE)             */}
+        {/* ========================================================================= */}
+        <section id="ecosystem" className="space-y-10">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase">
+              THE MARGA ECOSYSTEM
             </h2>
-            <p className="mt-3 text-sm text-slate-400">
-              Each portal is strictly scoped to its statutory statutory functions under the 2023 MPLADS guidelines.
+            <p className="mt-3 text-base text-slate-400">
+              Three synchronized systems powering zero-leakage governance.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto w-full">
-            {rolesList.map((role) => (
-              <div
-                key={role.id}
-                className={`group relative rounded-2xl bg-slate-900/90 border border-slate-800 ${role.borderColor} p-6 flex flex-col justify-between transition-all hover:scale-[1.02] shadow-xl backdrop-blur-xl`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 rounded-xl bg-slate-800/90 border border-slate-700/80 shadow-md">
-                      {role.icon}
+          {/* Interactive 3 Pillars Selector */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* MARGA Portal */}
+            <div 
+              onClick={() => setActivePillar('portal')}
+              className={`p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-slate-950/90 backdrop-blur-xl ${
+                activePillar === 'portal' 
+                  ? 'border-emerald-500 shadow-2xl shadow-emerald-500/20 ring-1 ring-emerald-500 scale-[1.02]' 
+                  : 'border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                  <Server className="w-8 h-8" />
+                </div>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300">
+                  Web Platform
+                </span>
+              </div>
+              <h3 className="text-2xl font-black text-white">MARGA Portal</h3>
+              <p className="text-sm font-bold text-emerald-400 mt-1">Multi-Tier Command Desk</p>
+              <p className="text-sm text-slate-300 mt-4 leading-relaxed">
+                Connects MPs, District Collectors, and Engineers with real-time budget velocity and fast sanction approvals.
+              </p>
+            </div>
+
+            {/* MARGA Eyes */}
+            <div 
+              onClick={() => setActivePillar('eyes')}
+              className={`p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-slate-950/90 backdrop-blur-xl ${
+                activePillar === 'eyes' 
+                  ? 'border-sky-500 shadow-2xl shadow-sky-500/20 ring-1 ring-sky-500 scale-[1.02]' 
+                  : 'border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="p-4 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/30">
+                  <Smartphone className="w-8 h-8" />
+                </div>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-sky-500/20 text-sky-300">
+                  Mobile CameraX
+                </span>
+              </div>
+              <h3 className="text-2xl font-black text-white">MARGA Eyes</h3>
+              <p className="text-sm font-bold text-sky-400 mt-1">Ground Camera Engine</p>
+              <p className="text-sm text-slate-300 mt-4 leading-relaxed">
+                Mobile camera app that burns satellite GPS coordinates directly into milestone photos. Blocks gallery uploads.
+              </p>
+            </div>
+
+            {/* MARGA Brain */}
+            <div 
+              onClick={() => setActivePillar('brain')}
+              className={`p-8 rounded-3xl border transition-all duration-300 cursor-pointer bg-slate-950/90 backdrop-blur-xl ${
+                activePillar === 'brain' 
+                  ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20 ring-1 ring-indigo-500 scale-[1.02]' 
+                  : 'border-slate-800 hover:border-slate-700'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="p-4 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                  <BrainCircuit className="w-8 h-8" />
+                </div>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300">
+                  5 ML Models
+                </span>
+              </div>
+              <h3 className="text-2xl font-black text-white">MARGA Brain</h3>
+              <p className="text-sm font-bold text-indigo-400 mt-1">Predictive & Guardrails Layer</p>
+              <p className="text-sm text-slate-300 mt-4 leading-relaxed">
+                Predictive AI models that pre-screen proposals, forecast delays, detect photo tampering, and cluster citizen demands.
+              </p>
+            </div>
+          </div>
+
+          {/* Interactive Feature & Model Showcase Box */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-slate-950/95 border border-slate-800 backdrop-blur-2xl shadow-2xl">
+            
+            {/* Header Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+              <div>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
+                  Interactive System Inspector
+                </span>
+                <h3 className="text-2xl font-black text-white mt-1">
+                  {activePillar === 'brain' && 'The 5 Models Inside MARGA Brain'}
+                  {activePillar === 'eyes' && 'The 5 Capabilities of MARGA Eyes'}
+                  {activePillar === 'portal' && 'The 5 Core Modules of MARGA Portal'}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800">
+                <button
+                  onClick={() => setActivePillar('brain')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activePillar === 'brain' ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  MARGA Brain
+                </button>
+                <button
+                  onClick={() => setActivePillar('eyes')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activePillar === 'eyes' ? 'bg-sky-500 text-white shadow-md' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  MARGA Eyes
+                </button>
+                <button
+                  onClick={() => setActivePillar('portal')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activePillar === 'portal' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  MARGA Portal
+                </button>
+              </div>
+            </div>
+
+            {/* MARGA Brain: 5 Models Interactive Grid */}
+            {activePillar === 'brain' && (
+              <div className="mt-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {brainModels.map((model, idx) => (
+                    <div
+                      key={model.num}
+                      onClick={() => setSelectedBrainModel(idx)}
+                      className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer space-y-3 ${
+                        selectedBrainModel === idx
+                          ? `${model.bg} ring-1 ring-indigo-500 shadow-xl scale-[1.03]`
+                          : 'bg-slate-900/70 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono font-bold text-indigo-400">MODEL {model.num}</span>
+                        {selectedBrainModel === idx && <Check className="w-4 h-4 text-indigo-400" />}
+                      </div>
+                      <h4 className="text-base font-bold text-white leading-snug">{model.title}</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">{model.type}</p>
                     </div>
-                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${role.badgeColor}`}>
-                      {role.badge}
-                    </span>
+                  ))}
+                </div>
+
+                {/* Selected Model Focus Card */}
+                {brainModels[selectedBrainModel] && (
+                  <div className="p-6 rounded-2xl bg-slate-900 border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30">
+                          {brainModels[selectedBrainModel].icon}
+                        </div>
+                        <div>
+                          <span className="text-xs font-mono text-indigo-400 font-bold uppercase">
+                            Model {brainModels[selectedBrainModel].num} Details
+                          </span>
+                          <h4 className="text-lg font-bold text-white">{brainModels[selectedBrainModel].title}</h4>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">
+                        {brainModels[selectedBrainModel].desc}
+                      </p>
+                    </div>
+
+                    <div className="px-5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-center shrink-0">
+                      <span className="text-xs text-slate-400 block font-mono">Engine Type</span>
+                      <span className="text-sm font-bold text-indigo-300 font-mono mt-0.5 block">
+                        {brainModels[selectedBrainModel].type}
+                      </span>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
-                    {role.name}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-2.5 leading-relaxed font-normal">
-                    {role.desc}
+                )}
+              </div>
+            )}
+
+            {/* MARGA Eyes: 5 Capabilities Grid */}
+            {activePillar === 'eyes' && (
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-4">
+                {eyesFeatures.map((item) => (
+                  <div key={item.num} className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+                    <span className="text-xs font-mono font-bold text-sky-400">FEATURE {item.num}</span>
+                    <h4 className="text-base font-bold text-white">{item.title}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* MARGA Portal: 5 Modules Grid */}
+            {activePillar === 'portal' && (
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-4">
+                {portalFeatures.map((item) => (
+                  <div key={item.num} className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+                    <span className="text-xs font-mono font-bold text-emerald-400">MODULE {item.num}</span>
+                    <h4 className="text-base font-bold text-white">{item.title}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* HOW A PROJECT MOVES FORWARD (ANIMATED & HIGHLY INTERACTIVE)              */}
+        {/* ========================================================================= */}
+        <section className="space-y-10">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase">
+              HOW A PROJECT MOVES FORWARD
+            </h2>
+            <p className="mt-3 text-base text-slate-400">
+              Interactive simulator demonstrating honest delivery from start to finish.
+            </p>
+          </div>
+
+          {/* 4 Interactive Step Buttons */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { num: 1, title: '01 · Suggest', subtitle: 'Public Need & MP Recommendation' },
+              { num: 2, title: '02 · Sanction', subtitle: 'District Land & Rule Screening' },
+              { num: 3, title: '03 · Build', subtitle: 'Ground Execution & GPS Photo Lock' },
+              { num: 4, title: '04 · Deliver', subtitle: 'Audit Certified & Public Handover' },
+            ].map((s) => (
+              <button
+                key={s.num}
+                onClick={() => setActivePathwayStep(s.num)}
+                className={`p-6 rounded-2xl border text-left transition-all duration-300 cursor-pointer ${
+                  activePathwayStep === s.num
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-xl scale-[1.02]'
+                    : 'bg-slate-950/90 border-slate-800 text-slate-300 hover:border-slate-700'
+                }`}
+              >
+                <div className={`text-lg font-black font-mono ${activePathwayStep === s.num ? 'text-slate-950' : 'text-emerald-400'}`}>
+                  {s.title}
+                </div>
+                <div className={`text-xs mt-2 font-medium ${activePathwayStep === s.num ? 'text-slate-900' : 'text-slate-400'}`}>
+                  {s.subtitle}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Interactive Step Simulator Arena */}
+          <div className="p-8 sm:p-12 rounded-3xl bg-slate-950/95 border border-slate-800 backdrop-blur-2xl shadow-2xl">
+            
+            {/* Step 1: Interactive Cost Slider Simulator */}
+            {activePathwayStep === 1 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div className="space-y-4">
+                  <span className="text-xs font-mono font-bold text-amber-400 uppercase">
+                    Step 01 · Recommendation
+                  </span>
+                  <h3 className="text-3xl font-black text-white">Community Idea & AI Budget Baseline</h3>
+                  <p className="text-base text-slate-300 leading-relaxed">
+                    Citizens request a drinking water plant. The MP recommends the project, and MARGA Brain Model 02 automatically validates the proposed budget against regional baselines.
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-800/80">
-                  <button
-                    onClick={() => onSelectRoleForAuth(role.id)}
-                    className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-amber-500 text-white hover:text-slate-950 text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md group-hover:shadow-lg"
-                  >
-                    <span>Authorize as {role.id}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                {/* Interactive Slider Widget */}
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400 font-bold">Adjust Proposed Budget:</span>
+                    <span className="text-xl font-bold font-mono text-emerald-400">₹{testBudget} Lakhs</span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={10}
+                    max={120}
+                    value={testBudget}
+                    onChange={(e) => setTestBudget(Number(e.target.value))}
+                    className="w-full accent-emerald-400 cursor-pointer h-2.5 bg-slate-800 rounded-lg appearance-none"
+                  />
+
+                  <div className="flex justify-between text-xs text-slate-500 font-mono">
+                    <span>₹10L (Small)</span>
+                    <span>₹45L (Standard Baseline)</span>
+                    <span>₹120L (High)</span>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border text-sm transition-all duration-200 flex items-center gap-3 ${
+                    testBudget > 80 
+                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' 
+                      : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                  }`}>
+                    {testBudget > 80 ? (
+                      <>
+                        <AlertTriangle className="w-6 h-6 text-rose-400 shrink-0" />
+                        <div>
+                          <span className="font-bold block">Flagged: High Cost Outlier</span>
+                          <span className="text-xs text-rose-400">Exceeds standard ₹45L baseline. Scrutiny triggered.</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+                        <div>
+                          <span className="font-bold block">Verified: Within Normal Baseline</span>
+                          <span className="text-xs text-emerald-400">Ready for District administrative sanction.</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
+            )}
+
+            {/* Step 2: Interactive Land Toggle Simulator */}
+            {activePathwayStep === 2 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div className="space-y-4">
+                  <span className="text-xs font-mono font-bold text-blue-400 uppercase">
+                    Step 02 · Sanction
+                  </span>
+                  <h3 className="text-3xl font-black text-white">District Verification & Eligibility</h3>
+                  <p className="text-base text-slate-300 leading-relaxed">
+                    The District Authority verifies public land ownership. MARGA Brain Model 01 blocks funds from being diverted to private or commercial properties.
+                  </p>
+                </div>
+
+                {/* Interactive Toggle Widget */}
+                <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <span className="text-xs text-slate-400 font-bold block">Test Land Ownership Rule:</span>
+                  
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950 border border-slate-800">
+                    <span className="text-sm text-slate-300">Is this project on private trust land?</span>
+                    <button
+                      onClick={() => setIsPrivateLand(!isPrivateLand)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isPrivateLand ? 'bg-rose-500 text-white shadow-md' : 'bg-slate-800 text-slate-300 hover:text-white'
+                      }`}
+                    >
+                      {isPrivateLand ? 'YES (Private Land)' : 'NO (Public Gram Panchayat)'}
+                    </button>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border text-sm transition-all duration-200 flex items-center gap-3 ${
+                    isPrivateLand 
+                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' 
+                      : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                  }`}>
+                    {isPrivateLand ? (
+                      <>
+                        <XCircle className="w-6 h-6 text-rose-400 shrink-0" />
+                        <div>
+                          <span className="font-bold block">Sanction Blocked</span>
+                          <span className="text-xs text-rose-400">Funds cannot be spent on private properties. Public money protected.</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+                        <div>
+                          <span className="font-bold block">Sanction Approved (AS / TS Issued)</span>
+                          <span className="text-xs text-emerald-400">Work assigned to District Engineering Wing.</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Simulated Live Camera HUD */}
+            {activePathwayStep === 3 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div className="space-y-4">
+                  <span className="text-xs font-mono font-bold text-sky-400 uppercase">
+                    Step 03 · Execution
+                  </span>
+                  <h3 className="text-3xl font-black text-white">Live Ground Proof via MARGA Eyes</h3>
+                  <p className="text-base text-slate-300 leading-relaxed">
+                    Field engineers capture milestone progress on site. The app locks satellite GPS coordinates into image EXIF metadata. No gallery uploads allowed.
+                  </p>
+                </div>
+
+                {/* Viewfinder HUD */}
+                <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 aspect-video flex flex-col justify-between p-5">
+                    <div className="flex justify-between items-center z-10">
+                      <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                        LIVE CAMERAX LOCK
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">GPS ACCURACY ±3M</span>
+                    </div>
+
+                    <div className="relative z-10 space-y-1 bg-slate-900/90 p-3 rounded-xl border border-slate-800 backdrop-blur-md">
+                      <div className="flex items-center gap-2 text-emerald-400 text-sm font-mono font-bold">
+                        <MapPin className="w-4 h-4" />
+                        <span>GPS: 12.3051° N, 76.6551° E · Mysuru</span>
+                      </div>
+                      <p className="text-xs text-slate-400 font-mono">Timestamp: Live Verified On Ground</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Completion & Handover */}
+            {activePathwayStep === 4 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div className="space-y-4">
+                  <span className="text-xs font-mono font-bold text-purple-400 uppercase">
+                    Step 04 · Handover
+                  </span>
+                  <h3 className="text-3xl font-black text-white">Public Audit & Asset Delivery</h3>
+                  <p className="text-base text-slate-300 leading-relaxed">
+                    Mandatory 10% spot audit is completed. The project is certified, handed over to the community, and published on the open public ledger.
+                  </p>
+                </div>
+
+                {/* Handover Card */}
+                <div className="bg-slate-900 p-8 rounded-2xl border border-emerald-500/40 text-center space-y-4">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h4 className="text-2xl font-black text-white">Asset Handed Over to Public</h4>
+                  <p className="text-sm text-slate-300 max-w-sm mx-auto">
+                    Clean drinking water active. 100% public transparency recorded on central ledger.
+                  </p>
+                  <a
+                    href="#portals"
+                    className="inline-flex items-center gap-2 mt-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all cursor-pointer shadow-lg"
+                  >
+                    <span>Explore Portals</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* STAKEHOLDER PORTALS (CLEAN & DIRECT CARDS)                                */}
+        {/* ========================================================================= */}
+        <section id="portals" className="space-y-10">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase">
+              STAKEHOLDER PORTALS
+            </h2>
+            <p className="mt-3 text-base text-slate-400">
+              Select your authority workspace to continue.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {portals.map((p) => (
+              <div
+                key={p.id}
+                className={`p-8 rounded-3xl bg-slate-950/90 border ${p.color} transition-all duration-300 hover:-translate-y-1 shadow-xl flex flex-col justify-between`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
+                      {p.icon}
+                    </div>
+                    <span className="text-xs font-mono text-slate-400">{p.pin}</span>
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-white">{p.title}</h3>
+                  <p className="text-xs font-semibold text-slate-400 mt-0.5">{p.role}</p>
+                  <p className="text-sm text-slate-300 mt-4 leading-relaxed">{p.desc}</p>
+                </div>
+
+                <button
+                  onClick={() => onSelectRoleForAuth(p.id)}
+                  className="mt-8 w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-emerald-500 text-white hover:text-slate-950 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border border-slate-800 hover:border-emerald-400"
+                >
+                  <span>{p.btn}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             ))}
+
+            {/* Public Citizen Card */}
+            <div className="p-8 rounded-3xl bg-slate-950/90 border border-teal-500/30 hover:border-teal-400 transition-all duration-300 hover:-translate-y-1 shadow-xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-teal-400">
+                    <Eye className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs font-mono text-teal-400 font-bold">Open Access</span>
+                </div>
+
+                <h3 className="text-2xl font-bold text-white">Public Citizen</h3>
+                <p className="text-xs font-semibold text-teal-400 mt-0.5">Community Transparency</p>
+                <p className="text-sm text-slate-300 mt-4 leading-relaxed">
+                  Search sanctioned works, inspect live photo proof, and submit local project suggestions.
+                </p>
+              </div>
+
+              <button
+                onClick={onOpenPublicPortal}
+                className="mt-8 w-full py-3.5 px-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+              >
+                <span>Inspect Public Works</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 bg-slate-950 border-t border-slate-800/80 py-10 px-6 text-center text-xs text-slate-500">
-        <p className="max-w-2xl mx-auto leading-relaxed">
-          © 2026 Viksit M.A.R.G.A. — Built in strict compliance with the official Ministry of Statistics and Programme Implementation (MoSPI) MPLADS Guidelines (February 2023).
-        </p>
+      <footer className="relative z-10 bg-slate-950 border-t border-slate-900 py-10 px-6 text-center text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <span className="font-bold text-white font-mono tracking-wider">MARGA</span>
+          <p className="text-slate-400">
+            Open Civic Infrastructure · Real Ground Truth
+          </p>
+        </div>
       </footer>
     </div>
   );
 };
-
-// Audit verification stamp: 2026-09-03 09:39:30 +0530
-
-// Audit verification stamp: 2026-09-03 10:04:30 +0530
-
-// Audit verification stamp: 2026-09-03 10:29:30 +0530

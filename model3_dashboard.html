@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MARGA Brain · Model 03: Geospatial Duplicate Radar (Side-by-Side Road Demo)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+    
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Radar Sonar Sweep Overlay Animation */
+    @keyframes radar-sweep {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .radar-beam-overlay {
+      animation: radar-sweep 5s linear infinite;
+      transform-origin: center center;
+    }
+
+    /* Custom Leaflet Map Container */
+    .leaflet-container {
+      background-color: #f5f5f0 !important;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .leaflet-tile-pane {
+      filter: contrast(105%) brightness(98%);
+    }
+
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+      background: #0f172a !important;
+      color: #f8fafc !important;
+      border: 1px solid #334155 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .leaflet-popup-content {
+      margin: 12px 14px !important;
+      line-height: 1.5 !important;
+      font-size: 11px !important;
+    }
+
+    /* Custom Pulsing Markers */
+    .pulse-marker-danger {
+      width: 20px;
+      height: 20px;
+      background: #ef4444;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #ef4444;
+      animation: pulse-danger 1.5s infinite;
+    }
+
+    .pulse-marker-warning {
+      width: 20px;
+      height: 20px;
+      background: #f59e0b;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #f59e0b;
+      animation: pulse-warning 1.8s infinite;
+    }
+
+    .pulse-marker-center {
+      width: 22px;
+      height: 22px;
+      background: #10b981;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 20px #10b981;
+      animation: pulse-center 2s infinite;
+    }
+
+    @keyframes pulse-danger {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+      70% { transform: scale(1.2); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    @keyframes pulse-warning {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8); }
+      70% { transform: scale(1.2); box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    @keyframes pulse-center {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+      70% { transform: scale(1.2); box-shadow: 0 0 0 16px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col p-4 md:p-8 select-none">
+
+  <!-- Outer Frame -->
+  <div class="max-w-[1400px] w-full mx-auto bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col p-6 md:p-8 relative">
+    
+    <!-- Background Grid Effect -->
+    <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-25 pointer-events-none"></div>
+
+    <!-- ========================================================================= -->
+    <!-- 1. TOP HEADER                                                            -->
+    <!-- ========================================================================= -->
+    <header class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-slate-950 font-black text-2xl flex items-center justify-center font-mono shadow-lg shadow-emerald-500/20">
+          03
+        </div>
+        <div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-2xl font-black text-white tracking-tight font-mono">MARGA ENGINE</h1>
+            <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/30">
+              MODEL 03 OF 05
+            </span>
+            <span class="px-3 py-1 rounded-full bg-slate-900 text-slate-300 text-xs font-mono border border-slate-800">
+              SIDE-BY-SIDE ROAD COLLISION RADAR
+            </span>
+            <span class="px-3 py-1 rounded-full bg-slate-900 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/40">
+              DISTRICT: MYSURU (MYSORE)
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 font-mono tracking-wider mt-1 uppercase">
+            Double-Funding Detection Engine · Side-by-Side Road Work Overlap Demo
+          </p>
+        </div>
+      </div>
+
+      <!-- Demo Controls -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <button onclick="runAutoDemo()" id="btn-auto-demo" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-500/20">
+          <i data-lucide="play-circle" class="w-4 h-4"></i>
+          <span>Auto Demo Stream</span>
+        </button>
+        <button onclick="resetRadar()" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span>Reset Map</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- 2. METRIC STATS OVERVIEW BAR                                             -->
+    <!-- ========================================================================= -->
+    <section class="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
+      <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+          <span>DEMO WORK CATEGORY</span>
+          <i data-lucide="navigation" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="text-xl font-black font-mono text-white">Road Construction</div>
+        <div class="text-[11px] text-emerald-400 font-mono mt-1">Saligrama Main Corridor</div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+          <span>ROAD DISTANCE GAP</span>
+          <i data-lucide="radar" class="w-4 h-4 text-teal-400"></i>
+        </div>
+        <div class="text-2xl font-black font-mono text-white" id="stat-radius">65 Meters</div>
+        <div class="text-[11px] text-slate-400 font-mono mt-1">Identical Physical Stretch</div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+          <span>COLLISION CONFIDENCE</span>
+          <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+        </div>
+        <div class="text-2xl font-black font-mono text-rose-400" id="stat-blocked">97.8% Match</div>
+        <div class="text-[11px] text-rose-300/80 font-mono mt-1">Double Funding Claimed</div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono mb-1">
+          <span>DUPLICATE FUNDS BLOCKED</span>
+          <i data-lucide="indian-rupee" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div class="text-2xl font-black font-mono text-emerald-400">₹25.00 Lakhs</div>
+        <div class="text-[11px] text-emerald-400 font-mono mt-1">Public Tax Saved</div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 3. MAIN DASHBOARD CONTENT (LEFT CONTROLS / RIGHT MAP & SIDE-BY-SIDE)      -->
+    <!-- ========================================================================= -->
+    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+      
+      <!-- LEFT PANEL: SCENARIOS & PROPOSAL ENTRY (5 COLS) -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
+        
+        <!-- Side-by-Side Road Work Scenario Selector -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+              Mysuru Road Overlap Scenarios
+            </span>
+            <span class="text-[10px] font-mono text-slate-400">Click to run scan</span>
+          </div>
+
+          <div class="space-y-2">
+            <!-- Scenario 1: Side-by-Side Road Construction Duplicate -->
+            <button onclick="loadScenario('road-duplicate')" id="btn-scenario-road" class="w-full p-3.5 rounded-xl bg-slate-950 border border-rose-500/50 text-left transition-all cursor-pointer group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white group-hover:text-rose-400 transition-colors flex items-center gap-1.5">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+                  <span>Saligrama Road Paving</span>
+                </span>
+                <span class="px-2 py-0.5 rounded bg-rose-950 border border-rose-800 text-[10px] font-mono font-bold text-rose-400">
+                  97.8% Road Overlap (65m)
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">
+                2 separate projects claiming funds for the exact same road stretch!
+              </p>
+            </button>
+
+            <!-- Scenario 2: Moderate Proximity Warning -->
+            <button onclick="loadScenario('warning')" id="btn-scenario-warn" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-500/50 text-left transition-all cursor-pointer group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">
+                  ⚡ Hebbal Community Hall Road
+                </span>
+                <span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-800 text-[10px] font-mono font-bold text-amber-400">
+                  310m Proximity
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">
+                Existing road junction 310m away; recommendation: extend asphalt layer.
+              </p>
+            </button>
+
+            <!-- Scenario 3: Clean Sanction -->
+            <button onclick="loadScenario('clean')" id="btn-scenario-clean" class="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 text-left transition-all cursor-pointer group">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  ✅ Kuvempunagar New Road Stretch
+                </span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-[10px] font-mono font-bold text-emerald-400">
+                  100% Unique
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">
+                Zero matching road assets within 750m perimeter in Kuvempunagar.
+              </p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Proposal Form -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex-1 flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="file-text" class="w-4 h-4 text-emerald-400"></i>
+                Proposed Road Construction Entry
+              </span>
+              <span class="text-[10px] font-mono text-emerald-400 font-semibold" id="form-status">● Live Entry</span>
+            </div>
+
+            <!-- Inputs -->
+            <div class="space-y-3">
+              <div>
+                <label class="text-[11px] font-mono text-slate-400 block mb-1">Work Description</label>
+                <input type="text" id="input-title" value="Construction & Bituminous Paving of Saligrama Aralikatte Main Road" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none">
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[11px] font-mono text-slate-400 block mb-1">Latitude (°N)</label>
+                  <input type="text" id="input-lat" value="12.3120" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="text-[11px] font-mono text-slate-400 block mb-1">Longitude (°E)</label>
+                  <input type="text" id="input-lng" value="76.6490" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none">
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-[11px] font-mono text-slate-400 mb-1">
+                  <span>Geospatial Radar Radius</span>
+                  <span id="radius-val" class="text-emerald-400 font-bold">500m</span>
+                </div>
+                <input type="range" id="input-radius" min="100" max="1000" step="50" value="500" oninput="updateRadius(this.value)" class="w-full accent-emerald-400 h-2 bg-slate-950 rounded-lg cursor-pointer">
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <button onclick="executeRadarScan()" id="btn-scan" class="mt-5 w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-500/20">
+            <i data-lucide="radar" class="w-4 h-4"></i>
+            <span>EXECUTE 500M ROAD RADAR SCAN</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT PANEL: LEAFLET BEIGE MAP & SIDE-BY-SIDE COMPARISON (7 COLS) -->
+      <div class="lg:col-span-7 flex flex-col gap-6">
+        
+        <!-- Leaflet Map Container -->
+        <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center relative overflow-hidden min-h-[420px]">
+          
+          <!-- Map Header Info Bar -->
+          <div class="w-full flex items-center justify-between mb-3 z-20 font-mono text-xs px-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span class="text-emerald-400 font-bold" id="radar-mode-text">LEAFLET GIS: ROAD CORRIDOR INSPECTION</span>
+            </div>
+            <div class="text-slate-400" id="radar-coords-display">
+              CENTER: 12.3120° N, 76.6490° E
+            </div>
+          </div>
+
+          <!-- Leaflet Map Canvas Container (Beige Map Tiles) -->
+          <div class="w-full h-[360px] rounded-2xl border border-slate-800 relative z-10 shadow-2xl overflow-hidden" id="leaflet-map-container">
+            <div id="radar-map" class="w-full h-full"></div>
+
+            <!-- Rotating Radar Overlay -->
+            <div class="absolute inset-0 pointer-events-none z-20 flex items-center justify-center overflow-hidden">
+              <div class="w-[600px] h-[600px] radar-beam-overlay rounded-full opacity-25">
+                <div class="w-1/2 h-1/2 bg-gradient-to-tr from-emerald-500/40 via-emerald-500/10 to-transparent origin-bottom-right rounded-tl-full"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Verdict Banner -->
+          <div id="verdict-banner" class="w-full mt-3 p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between z-20 font-mono text-xs transition-all">
+            <div class="flex items-center gap-3">
+              <div id="verdict-icon" class="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider">AI Collision Detection Verdict</div>
+                <div id="verdict-title" class="text-sm font-bold text-white">SCAN READY — Standing By</div>
+              </div>
+            </div>
+            <div id="verdict-badge" class="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold text-xs">
+              Awaiting Scan
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SIDE-BY-SIDE ROAD CONSTRUCTION COMPARISON CARD -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex-1 flex flex-col justify-between space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <span class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="columns" class="w-4 h-4 text-emerald-400"></i>
+              Side-by-Side Road Work Claim Audit
+            </span>
+            <span class="text-[10px] font-mono text-rose-400 font-bold px-2 py-0.5 rounded bg-rose-950 border border-rose-800">
+              97.8% Vector Similarity Match
+            </span>
+          </div>
+
+          <!-- Side-by-Side Comparison Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="side-by-side-container">
+            
+            <!-- PROPOSED WORK A -->
+            <div class="p-4 rounded-xl bg-slate-950 border border-emerald-500/40 space-y-2 font-mono text-xs relative">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span class="text-[10px] text-emerald-400 font-bold uppercase">PROPOSED WORK A (MPLADS 2025-26)</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              </div>
+              <h4 class="font-bold text-white text-xs leading-snug">
+                Construction & Paving of Saligrama Aralikatte Main Road
+              </h4>
+              <div class="space-y-1 text-[11px] text-slate-300">
+                <div>Sanction Amount: <span class="text-white font-bold">₹25.00 Lakhs</span></div>
+                <div>Coordinates: <span class="text-slate-400">12.3120° N, 76.6490° E</span></div>
+                <div>MP Portfolio: <span class="text-slate-400">Lok Sabha 2025</span></div>
+                <div>Status: <span class="text-emerald-400 font-bold">Pending Sanction</span></div>
+              </div>
+            </div>
+
+            <!-- CLAIMED EXISTING WORK B (COLLISION) -->
+            <div class="p-4 rounded-xl bg-slate-950 border border-rose-500/50 space-y-2 font-mono text-xs relative shadow-lg shadow-rose-950/30">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span class="text-[10px] text-rose-400 font-bold uppercase">EXISTING WORK B (STATE PWD / 2024)</span>
+                <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              </div>
+              <h4 class="font-bold text-white text-xs leading-snug">
+                Asphalt Road from Agriculture Field to Saligrama Aralikatte
+              </h4>
+              <div class="space-y-1 text-[11px] text-slate-300">
+                <div>Sanction Amount: <span class="text-white font-bold">₹20.00 Lakhs</span></div>
+                <div>Coordinates: <span class="text-slate-400">12.3125° N, 76.6495° E</span></div>
+                <div>Distance Gap: <span class="text-rose-400 font-bold">65 Meters Away</span></div>
+                <div>Status: <span class="text-rose-400 font-bold">DOUBLE-FUNDING DUPLICATE</span></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Breakdown List -->
+          <div class="space-y-2 overflow-y-auto max-h-[100px] pr-1" id="breakdown-list">
+            <!-- Dynamic items populated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 4. FOOTER                                                                 -->
+    <!-- ========================================================================= -->
+    <footer class="relative z-10 flex items-center justify-between border-t border-slate-800/80 pt-5 mt-6 text-xs text-slate-400 font-mono">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-bold text-white">MARGA Civic Infrastructure OS · Mysuru Road Collision Engine</span>
+        <span class="text-slate-600">|</span>
+        <span>Side-by-Side Radar v3.6</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>Press <kbd class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-white font-bold">Space</kbd> for Auto Demo</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Interactive JavaScript & Leaflet Logic -->
+  <script>
+    // Initialise Lucide icons
+    lucide.createIcons();
+
+    // Leaflet Map Global Instance
+    let map = null;
+    let centerMarker = null;
+    let radiusCircle = null;
+    let projectMarkers = [];
+    let roadPolyline = null;
+
+    // Real Mysuru MPLADS Road Construction Scenarios Data
+    const scenarios = {
+      'road-duplicate': {
+        title: 'Construction & Bituminous Paving of Saligrama Aralikatte Main Road',
+        district: 'Saligrama, Mysuru, Karnataka',
+        mp: 'YADUVEER KRISHNADATTA CHAMARAJA WADIYAR',
+        lat: 12.3120,
+        lng: 76.6490,
+        radius: 500,
+        verdict: 'DUPLICATE ROAD CLAIM DETECTED',
+        verdictType: 'danger',
+        verdictDesc: '2 separate schemes claiming funds for the exact same road stretch!',
+        verdictBadge: 'REJECT SANCTION',
+        workA: {
+          title: 'Construction & Paving of Saligrama Aralikatte Main Road',
+          amount: '₹25.00 Lakhs',
+          coords: '12.3120° N, 76.6490° E',
+          scheme: 'MPLADS 2025-26',
+          status: 'Pending Sanction'
+        },
+        workB: {
+          title: 'Asphalt Road from Agriculture Field to Saligrama Aralikatte',
+          amount: '₹20.00 Lakhs',
+          coords: '12.3125° N, 76.6495° E',
+          gap: '65 Meters Away',
+          scheme: 'State PWD / 2024 MPLADS',
+          status: 'DOUBLE-FUNDING DUPLICATE'
+        },
+        blips: [
+          {
+            name: 'Asphalt Road from Agriculture Field to Saligrama Aralikatte (2024)',
+            lat: 12.3125,
+            lng: 76.6495,
+            dist: '65m',
+            sim: '97.8%',
+            status: 'danger',
+            fund: '₹20.0 Lakhs · State PWD',
+            desc: 'Existing sanctioned road paving work on the exact same physical corridor.'
+          },
+          {
+            name: 'Drainage Pipe & Culvert Work, Saligrama Junction',
+            lat: 12.3140,
+            lng: 76.6515,
+            dist: '310m',
+            sim: '58.0%',
+            status: 'warning',
+            fund: '₹12.0 Lakhs · Panchayat Fund',
+            desc: 'Cross-drainage pipe installation adjacent to road route.'
+          }
+        ]
+      },
+      'warning': {
+        title: 'Construction of Hebbal Industrial Community Hall Road Link',
+        district: 'Hebbal, Mysuru',
+        mp: 'YADUVEER KRISHNADATTA CHAMARAJA WADIYAR',
+        lat: 12.3350,
+        lng: 76.6210,
+        radius: 500,
+        verdict: 'PROXIMITY ADVISORY',
+        verdictType: 'warning',
+        verdictDesc: 'Existing road junction 310m away. Recommend extension.',
+        verdictBadge: 'MANUAL REVIEW',
+        workA: {
+          title: 'Hebbal Industrial Community Hall Road Link',
+          amount: '₹35.00 Lakhs',
+          coords: '12.3350° N, 76.6210° E',
+          scheme: 'MPLADS 2025-26',
+          status: 'Under Review'
+        },
+        workB: {
+          title: 'Basaveshwara Community Hall Main Access Road',
+          amount: '₹28.00 Lakhs',
+          coords: '12.3375° N, 76.6232° E',
+          gap: '310 Meters Away',
+          scheme: 'MUDA Engineering Wing',
+          status: 'PROXIMITY ADVISORY'
+        },
+        blips: [
+          {
+            name: 'Basaveshwara Community Hall Main Access Road',
+            lat: 12.3375,
+            lng: 76.6232,
+            dist: '310m',
+            sim: '68.4%',
+            status: 'warning',
+            fund: '₹28.0 Lakhs · MUDA',
+            desc: 'Existing access road connecting to main arterial route.'
+          }
+        ]
+      },
+      'clean': {
+        title: 'Construction of New Road Stretch in Kuvempunagar Sector 2',
+        district: 'Kuvempunagar, Mysuru',
+        mp: 'YADUVEER KRISHNADATTA CHAMARAJA WADIYAR',
+        lat: 12.2890,
+        lng: 76.6310,
+        radius: 500,
+        verdict: 'NO ROAD DUPLICATES FOUND',
+        verdictType: 'success',
+        verdictDesc: '0 overlapping road assets within 500m perimeter.',
+        verdictBadge: 'CLEARED FOR SANCTION',
+        workA: {
+          title: 'Kuvempunagar Sector 2 New Road Construction',
+          amount: '₹18.00 Lakhs',
+          coords: '12.2890° N, 76.6310° E',
+          scheme: 'MPLADS 2025-26',
+          status: 'Approved'
+        },
+        workB: {
+          title: 'No Matching Road Asset in 750m Perimeter',
+          amount: '₹0.00',
+          coords: 'N/A',
+          gap: 'Clean Radius',
+          scheme: 'None',
+          status: '100% UNIQUE ASSET'
+        },
+        blips: []
+      }
+    };
+
+    let currentScenarioKey = 'road-duplicate';
+
+    // Initialize Leaflet Map with Esri World Topo Map (The Beige Map)
+    function initMap() {
+      if (map) return;
+
+      const defaultLat = 12.3120;
+      const defaultLng = 76.6490;
+
+      map = L.map('radar-map', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView([defaultLat, defaultLng], 16);
+
+      // Esri World Topo Map (Reliable Beige Map - No 403 Blocks)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19
+      }).addTo(map);
+
+      // Custom Zoom Control
+      L.control.zoom({ position: 'topright' }).addTo(map);
+    }
+
+    function updateRadius(val) {
+      document.getElementById('radius-val').innerText = val + 'm';
+      document.getElementById('stat-radius').innerText = val + ' Meters';
+      if (radiusCircle) {
+        radiusCircle.setRadius(parseInt(val));
+      }
+    }
+
+    function loadScenario(key) {
+      currentScenarioKey = key;
+      const sc = scenarios[key];
+
+      document.getElementById('input-title').value = sc.title;
+      document.getElementById('input-lat').value = sc.lat;
+      document.getElementById('input-lng').value = sc.lng;
+      document.getElementById('input-radius').value = sc.radius;
+      document.getElementById('radius-val').innerText = sc.radius + 'm';
+
+      // Update Side-by-Side Card
+      const sbsContainer = document.getElementById('side-by-side-container');
+      const isDanger = sc.verdictType === 'danger';
+      const isWarning = sc.verdictType === 'warning';
+
+      sbsContainer.innerHTML = `
+        <!-- WORK A -->
+        <div class="p-4 rounded-xl bg-slate-950 border ${isDanger ? 'border-emerald-500/40' : 'border-slate-800'} space-y-2 font-mono text-xs">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-[10px] text-emerald-400 font-bold uppercase">PROPOSED ROAD WORK A</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <h4 class="font-bold text-white text-xs leading-snug">${sc.workA.title}</h4>
+          <div class="space-y-1 text-[11px] text-slate-300">
+            <div>Sanction: <span class="text-white font-bold">${sc.workA.amount}</span></div>
+            <div>Coordinates: <span class="text-slate-400">${sc.workA.coords}</span></div>
+            <div>Scheme: <span class="text-slate-400">${sc.workA.scheme}</span></div>
+            <div>Status: <span class="text-emerald-400 font-bold">${sc.workA.status}</span></div>
+          </div>
+        </div>
+
+        <!-- WORK B -->
+        <div class="p-4 rounded-xl bg-slate-950 border ${isDanger ? 'border-rose-500/50 shadow-lg shadow-rose-950/30' : (isWarning ? 'border-amber-500/50' : 'border-slate-800')} space-y-2 font-mono text-xs">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-[10px] ${isDanger ? 'text-rose-400' : (isWarning ? 'text-amber-400' : 'text-emerald-400')} font-bold uppercase">
+              ${isDanger ? 'EXISTING ROAD WORK B (CLAIMED OVERLAP)' : 'PROXIMITY MATCH B'}
+            </span>
+            <span class="w-2 h-2 rounded-full ${isDanger ? 'bg-rose-500 animate-ping' : 'bg-amber-400'}"></span>
+          </div>
+          <h4 class="font-bold text-white text-xs leading-snug">${sc.workB.title}</h4>
+          <div class="space-y-1 text-[11px] text-slate-300">
+            <div>Sanction: <span class="text-white font-bold">${sc.workB.amount}</span></div>
+            <div>Coordinates: <span class="text-slate-400">${sc.workB.coords}</span></div>
+            <div>Distance Gap: <span class="${isDanger ? 'text-rose-400' : 'text-amber-400'} font-bold">${sc.workB.gap}</span></div>
+            <div>Status: <span class="${isDanger ? 'text-rose-400' : (isWarning ? 'text-amber-400' : 'text-emerald-400')} font-bold">${sc.workB.status}</span></div>
+          </div>
+        </div>
+      `;
+
+      executeRadarScan();
+    }
+
+    function executeRadarScan() {
+      initMap();
+
+      const sc = scenarios[currentScenarioKey];
+      const breakdownList = document.getElementById('breakdown-list');
+      const verdictBanner = document.getElementById('verdict-banner');
+      const verdictTitle = document.getElementById('verdict-title');
+      const verdictBadge = document.getElementById('verdict-badge');
+      const verdictIcon = document.getElementById('verdict-icon');
+
+      document.getElementById('radar-coords-display').innerText = `CENTER: ${sc.lat}° N, ${sc.lng}° E`;
+
+      // Fly to target road coordinates on beige map
+      map.flyTo([sc.lat, sc.lng], 16, { duration: 1.2 });
+
+      // Clear existing overlays
+      if (centerMarker) map.removeLayer(centerMarker);
+      if (radiusCircle) map.removeLayer(radiusCircle);
+      if (roadPolyline) map.removeLayer(roadPolyline);
+      projectMarkers.forEach(m => map.removeLayer(m));
+      projectMarkers = [];
+
+      // 1. Center Target Marker (Proposed Road Work A)
+      const centerIcon = L.divIcon({
+        className: 'custom-center-marker',
+        html: '<div class="pulse-marker-center"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      });
+
+      centerMarker = L.marker([sc.lat, sc.lng], { icon: centerIcon }).addTo(map);
+      centerMarker.bindPopup(`
+        <div class="font-mono">
+          <div class="text-[10px] text-emerald-400 font-bold uppercase mb-1">PROPOSED ROAD WORK A</div>
+          <div class="font-bold text-white text-xs mb-1">${sc.title}</div>
+          <div class="text-slate-300 text-[10px]">District: ${sc.district}</div>
+          <div class="text-slate-400 text-[10px]">Sanction: ₹25.0 Lakhs</div>
+        </div>
+      `).openPopup();
+
+      // 2. Add Perimeter Circle
+      const currentRadius = parseInt(document.getElementById('input-radius').value) || 500;
+      const circleColor = sc.verdictType === 'danger' ? '#ef4444' : (sc.verdictType === 'warning' ? '#f59e0b' : '#10b981');
+      
+      radiusCircle = L.circle([sc.lat, sc.lng], {
+        radius: currentRadius,
+        color: circleColor,
+        weight: 2,
+        dashArray: '6, 6',
+        fillColor: circleColor,
+        fillOpacity: 0.12
+      }).addTo(map);
+
+      // 3. Update Verdict Banner
+      if (sc.verdictType === 'danger') {
+        verdictBanner.className = 'w-full mt-3 p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/50 flex items-center justify-between z-20 font-mono text-xs shadow-lg shadow-rose-950/40';
+        verdictIcon.className = 'p-2 rounded-lg bg-rose-500/20 text-rose-400';
+        verdictIcon.innerHTML = '<i data-lucide="alert-octagon" class="w-5 h-5"></i>';
+        verdictTitle.innerText = `${sc.verdict} · ${sc.verdictDesc}`;
+        verdictTitle.className = 'text-sm font-bold text-rose-300';
+        verdictBadge.className = 'px-3 py-1 rounded-lg bg-rose-900/60 border border-rose-500/60 text-rose-300 font-bold text-xs';
+        verdictBadge.innerText = sc.verdictBadge;
+      } else if (sc.verdictType === 'warning') {
+        verdictBanner.className = 'w-full mt-3 p-3.5 rounded-xl bg-amber-950/40 border border-amber-500/50 flex items-center justify-between z-20 font-mono text-xs shadow-lg shadow-amber-950/40';
+        verdictIcon.className = 'p-2 rounded-lg bg-amber-500/20 text-amber-400';
+        verdictIcon.innerHTML = '<i data-lucide="alert-triangle" class="w-5 h-5"></i>';
+        verdictTitle.innerText = `${sc.verdict} · ${sc.verdictDesc}`;
+        verdictTitle.className = 'text-sm font-bold text-amber-300';
+        verdictBadge.className = 'px-3 py-1 rounded-lg bg-amber-900/60 border border-amber-500/60 text-amber-300 font-bold text-xs';
+        verdictBadge.innerText = sc.verdictBadge;
+      } else {
+        verdictBanner.className = 'w-full mt-3 p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/50 flex items-center justify-between z-20 font-mono text-xs shadow-lg shadow-emerald-950/40';
+        verdictIcon.className = 'p-2 rounded-lg bg-emerald-500/20 text-emerald-400';
+        verdictIcon.innerHTML = '<i data-lucide="check-circle-2" class="w-5 h-5"></i>';
+        verdictTitle.innerText = `${sc.verdict} · ${sc.verdictDesc}`;
+        verdictTitle.className = 'text-sm font-bold text-emerald-300';
+        verdictBadge.className = 'px-3 py-1 rounded-lg bg-emerald-900/60 border border-emerald-500/60 text-emerald-300 font-bold text-xs';
+        verdictBadge.innerText = sc.verdictBadge;
+      }
+
+      // 4. Populate Markers & Road Polyline for Overlap
+      if (sc.blips.length === 0) {
+        breakdownList.innerHTML = `
+          <div class="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs font-mono text-emerald-300 flex items-center justify-between">
+            <span>✅ Kuvempunagar Road Perimeter Clear: Zero duplicate road funding claims.</span>
+            <span class="font-bold text-emerald-400">100% UNIQUE ROAD</span>
+          </div>
+        `;
+      } else {
+        breakdownList.innerHTML = '';
+        const lineCoords = [[sc.lat, sc.lng]];
+
+        sc.blips.forEach(b => {
+          const isDanger = b.status === 'danger';
+          const iconClass = isDanger ? 'pulse-marker-danger' : 'pulse-marker-warning';
+          lineCoords.push([b.lat, b.lng]);
+
+          // Marker for Road Work B
+          const markerIcon = L.divIcon({
+            className: 'custom-blip-marker',
+            html: `<div class="${iconClass}"></div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+          });
+
+          const pMarker = L.marker([b.lat, b.lng], { icon: markerIcon }).addTo(map);
+          pMarker.bindPopup(`
+            <div class="font-mono">
+              <div class="text-[10px] ${isDanger ? 'text-rose-400' : 'text-amber-400'} font-bold uppercase mb-1">
+                ${isDanger ? 'CLAIMED ROAD WORK B (DOUBLE FUNDING)' : 'PROXIMITY MATCH'} (${b.dist})
+              </div>
+              <div class="font-bold text-white text-xs mb-1">${b.name}</div>
+              <div class="text-slate-300 text-[10px] mb-1">Fund Source: ${b.fund}</div>
+              <div class="text-rose-400 text-[10px] font-bold mb-1">Similarity: ${b.sim} Vector Match</div>
+              <div class="text-slate-400 text-[9px] italic">${b.desc}</div>
+            </div>
+          `);
+          projectMarkers.push(pMarker);
+
+          // Breakdown Item
+          const item = document.createElement('div');
+          item.className = `p-3.5 rounded-xl bg-slate-950 border ${isDanger ? 'border-rose-500/40' : 'border-amber-500/40'} flex items-center justify-between text-xs font-mono cursor-pointer hover:border-slate-700 transition-all`;
+          item.onclick = () => {
+            map.flyTo([b.lat, b.lng], 17);
+            pMarker.openPopup();
+          };
+
+          item.innerHTML = `
+            <div>
+              <div class="font-bold text-white flex items-center gap-2">
+                <span class="${isDanger ? 'text-rose-400' : 'text-amber-400'}">●</span>
+                ${b.name}
+              </div>
+              <div class="text-[11px] text-slate-400 mt-0.5">
+                Distance: <span class="text-white font-bold">${b.dist}</span> | ${b.fund}
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold ${isDanger ? 'text-rose-400' : 'text-amber-400'}">${b.sim} Similarity</div>
+              <div class="text-[10px] text-slate-500">Road Corridor Overlap</div>
+            </div>
+          `;
+          breakdownList.appendChild(item);
+        });
+
+        // Draw Road Corridor Overlap Line connecting Work A and Work B
+        if (isDanger && lineCoords.length > 1) {
+          roadPolyline = L.polyline(lineCoords, {
+            color: '#ef4444',
+            weight: 4,
+            dashArray: '8, 8',
+            opacity: 0.85
+          }).addTo(map);
+        }
+      }
+
+      lucide.createIcons();
+    }
+
+    // Auto Demo Mode Stream
+    let isAutoPlaying = false;
+    async function runAutoDemo() {
+      if (isAutoPlaying) return;
+      isAutoPlaying = true;
+      const btn = document.getElementById('btn-auto-demo');
+      btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Streaming Road Collision Scan...</span>';
+      lucide.createIcons();
+
+      const sequence = ['road-duplicate', 'warning', 'clean'];
+      for (let i = 0; i < sequence.length; i++) {
+        loadScenario(sequence[i]);
+        await new Promise(r => setTimeout(r, 5500));
+      }
+
+      btn.innerHTML = '<i data-lucide="play-circle" class="w-4 h-4"></i><span>Auto Demo Stream</span>';
+      isAutoPlaying = false;
+      lucide.createIcons();
+    }
+
+    function resetRadar() {
+      currentScenarioKey = 'road-duplicate';
+      loadScenario('road-duplicate');
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        runAutoDemo();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadScenario('road-duplicate');
+    });
+  </script>
+</body>
+</html>

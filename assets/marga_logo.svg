@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%">
+  <!-- Deep Obsidian Canvas -->
+  <rect width="1024" height="1024" fill="#090A0D" />
+
+  <!-- MARGA Emblem Architecture -->
+  <g id="Emblem">
+    <!-- Left Wing (Bright White) -->
+    <!-- Starts bottom left, goes up to rounded top corner, slopes down into road valley, curves along the road boundary, and down to bottom-right of left wing -->
+    <path d="M 368 554
+             L 368 318
+             Q 368 298, 388 298
+             L 516 376
+             L 452 422
+             C 432 438, 432 486, 432 528
+             L 368 554 Z"
+          fill="#FFFFFF" />
+
+    <!-- Right Wing (Steel Grey) -->
+    <path d="M 530 376
+             L 636 298
+             Q 656 298, 656 318
+             L 656 554
+             L 594 522
+             C 594 480, 594 438, 574 416
+             L 530 376 Z"
+          fill="#848D9A" />
+
+    <!-- Center Curving Highway (MARGA - The Road) -->
+    <path d="M 454 472
+             C 454 440, 508 418, 584 412
+             C 550 428, 520 448, 524 492
+             C 528 532, 574 546, 594 554
+             L 498 554
+             C 466 534, 454 506, 454 472 Z"
+          fill="#FFFFFF" />
+  </g>
+
+  <!-- Precision Custom Wordmark (Distinctive MARGA Typeface with Chevron A's) -->
+  <g id="Wordmark" fill="#FFFFFF">
+    <!-- M -->
+    <path d="M 222 626 L 246 626 L 272 674 L 298 626 L 322 626 L 322 702 L 302 702 L 302 654 L 280 694 L 264 694 L 242 654 L 242 702 L 222 702 Z" />
+
+    <!-- A (Minimalist Chevron) -->
+    <path d="M 382 626 L 406 626 L 436 702 L 414 702 L 394 648 L 374 702 L 352 702 Z" />
+
+    <!-- R -->
+    <path d="M 488 626 L 526 626 C 546 626, 558 638, 558 652 C 558 664, 548 672, 536 676 L 560 702 L 536 702 L 516 678 L 508 678 L 508 702 L 488 702 Z M 508 644 L 508 662 L 524 662 C 532 662, 538 658, 538 653 C 538 648, 532 644, 524 644 Z" />
+
+    <!-- G -->
+    <path d="M 648 642 C 638 632, 624 626, 608 626 C 576 626, 554 650, 554 664 C 554 678, 576 702, 608 702 C 632 702, 646 690, 650 674 L 624 674 C 620 682, 612 686, 606 686 C 588 686, 574 674, 574 664 C 574 654, 588 642, 606 642 C 614 642, 622 646, 628 652 Z M 650 666 L 650 702 L 632 702 L 632 666 Z" />
+
+    <!-- A (Minimalist Chevron) -->
+    <path d="M 730 626 L 754 626 L 784 702 L 762 702 L 742 648 L 722 702 L 700 702 Z" />
+  </g>
+</svg>

@@ -22,7 +22,7 @@ import {
   CheckSquare,
   LayoutDashboard,
   Send,
-  Map,
+  Map as MapPinIcon,
 } from 'lucide-react';
 import { Work } from '../../types';
 import { LeafletProjectMap } from '../common/LeafletProjectMap';
@@ -256,7 +256,7 @@ export const IaPortal: React.FC<IaPortalProps> = ({
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Map className="w-3.5 h-3.5 text-emerald-600" />
+          <MapPinIcon className="w-3.5 h-3.5 text-emerald-600" />
           <span>Project GIS Map</span>
         </button>
 

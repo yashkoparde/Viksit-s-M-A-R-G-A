@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#08090D</color>
+    <color name="emerald">#10B981</color>
+    <color name="sky">#38BDF8</color>
+    <color name="white">#FFFFFF</color>
+    <string name="app_name">MARGA IA Engineer</string>
+    <style name="Theme.MargaDark" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#08090D</item>
+        <item name="android:navigationBarColor">#08090D</item>
+        <item name="android:windowBackground">#08090D</item>
+    </style>
+</resources>

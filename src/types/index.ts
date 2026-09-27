@@ -81,6 +81,7 @@ export interface WorkEvidence {
 export interface Work {
   id: string;
   originalId?: string;
+  sourceWorkId?: string | number;
   name: string;
   category: string;
   mpId: string;
@@ -193,17 +194,23 @@ export interface DistrictStats {
   totalWorks: number;
   completedPct: number;
   delayedCount: number;
+  delayedWorks?: number;
+  delayed?: number;
   highCriticalRiskCount: number;
   utilizationPct: number;
+  expenditureRate?: number;
   ucPendingCount: number;
+  pendingUCs?: number;
   inspectionCoveragePct: number; // DA inspection coverage
   stateInspectionCount: number; // State 1% tracking
   riskBand: RiskBand;
+  riskScore?: number;
   trend: 'improving' | 'stable' | 'worsening';
   dataIntegrityScore: number; // 0-100
   financialAnomalyScore: number;
   mismatchCount: number;
   scStUtilizationPct: number;
+  division?: string;
 }
 
 export interface ActionLog {
@@ -225,6 +232,7 @@ export interface NotificationItem {
   timestamp: string;
   workId?: string;
   unread: boolean;
+  read?: boolean;
 }
 
 export interface PreAuditItem {

@@ -190,12 +190,36 @@ export const MpPortal: React.FC<MpPortalProps> = ({
     setSelectedEscalationWork(w);
     setDraftSubject(`Inquiry regarding execution stoppage & payment mismatch: ${w.name} (${w.id})`);
     setDraftBody(
-      `To,\nThe District Magistrate & District Authority (MPLADS),\n${w.district || currentMP.constituency} District, ${w.state || currentMP.state}.\n\nSubject: Urgent inquiry regarding execution delay in ${w.name} (${w.id})\n\nDear Collector,\n\nDuring review of constituency works under my MPLADS allocation, serious deviation has been noted in the subject work:\n\n1. Certified Physical Progress: ${w.progress.physical}%\n2. Recorded Financial Draw: ₹${w.financial.expenditure.toFixed(2)} Lakhs (${w.progress.financial.toFixed(1)}% of sanctioned amount)\n3. Work Idle Duration: ${w.dates.daysInCurrentStage} calendar days without certified progress increments.\n\nAs payment appears to be running significantly ahead of certified physical execution (${(w.progress.financial - w.progress.physical).toFixed(1)} pp gap), I request you to kindly order an immediate physical verification by a competent engineer and furnish a factual status report within 14 days.\n\nYours sincerely,\n${currentMP.name}, MP (${currentMP.house} - ${currentMP.constituency} Constituency)`
+      `To,\nThe District Authority (DA - MPLADS),\n${w.district || currentMP.constituency} District, ${w.state || currentMP.state}.\n\nSubject: Urgent inquiry regarding execution delay in ${w.name} (${w.id})\n\nRespected District Authority,\n\nDuring review of constituency works under my MPLADS allocation, serious deviation has been noted in the subject work:\n\n1. Certified Physical Progress: ${w.progress.physical}%\n2. Recorded Financial Draw: ₹${w.financial.expenditure.toFixed(2)} Lakhs (${w.progress.financial.toFixed(1)}% of sanctioned amount)\n3. Work Idle Duration: ${w.dates.daysInCurrentStage} calendar days without certified progress increments.\n\nAs payment appears to be running significantly ahead of certified physical execution (${(w.progress.financial - w.progress.physical).toFixed(1)} pp gap), I request you to kindly order an immediate physical verification by a competent engineer and furnish a factual status report within 14 days.\n\nYours sincerely,\n${currentMP.name}, MP (${currentMP.house} - ${currentMP.constituency} Constituency)`
     );
     setEscalationSent(false);
   };
 
+  // District Authority contact number
+  const DA_WHATSAPP_NUMBER = '918778168629';
+
+  const sendWhatsAppMemo = (work: Work | null, customBody?: string) => {
+    if (!work) return;
+    const body = customBody || (
+      `*OFFICIAL MPLADS STATUTORY INQUIRY MEMO*\n\n` +
+      `*From:* ${currentMP.name}, Member of Parliament (${currentMP.house} - ${currentMP.constituency})\n` +
+      `*To:* District Authority (DA), ${work.district || currentMP.constituency}\n` +
+      `*Work ID:* ${work.id}\n` +
+      `*Project:* ${work.name}\n` +
+      `*Sanctioned Cost:* ₹${work.financial.sanctioned.toFixed(2)} Lakhs\n` +
+      `*Certified Physical Progress:* ${work.progress.physical}%\n` +
+      `*Financial Expenditure:* ₹${work.financial.expenditure.toFixed(2)} Lakhs (${work.progress.financial.toFixed(1)}%)\n` +
+      `*Idle Duration:* ${work.dates.daysInCurrentStage} calendar days\n\n` +
+      `*Statutory Issue:* ${work.rootCause?.issue || 'Payment draw significantly ahead of certified physical work.'}\n\n` +
+      `*Statutory Demand:* Immediate spot verification by an Assistant Executive Engineer and submission of factual report within 14 days under MoSPI Guidelines Para 3.1.`
+    );
+    const waUrl = `https://wa.me/${DA_WHATSAPP_NUMBER}?text=${encodeURIComponent(body)}`;
+    window.open(waUrl, '_blank');
+  };
+
   const handleSendEscalation = () => {
+    // Escalate via wa.me/+91 8778168629 to District Authority
+    sendWhatsAppMemo(selectedEscalationWork, draftBody);
     setEscalationSent(true);
     setTimeout(() => {
       const newEsc = {
@@ -203,15 +227,15 @@ export const MpPortal: React.FC<MpPortalProps> = ({
         workId: selectedEscalationWork?.id || 'WRK-GEN',
         workTitle: selectedEscalationWork?.name || 'Constituency Inquiry',
         date: 'Today',
-        recipient: `District Magistrate, ${selectedEscalationWork?.district || currentMP.constituency}`,
+        recipient: `District Authority (DA), ${selectedEscalationWork?.district || currentMP.constituency}`,
         subject: draftSubject,
-        status: 'Dispatched to Collectorate',
+        status: 'Dispatched to District Authority via WhatsApp (+91 8778168629)',
         responseDue: '14 days',
       };
       setSentEscalations([newEsc, ...sentEscalations]);
-      onActionComplete(`Formal inquiry memo dispatched to District Authority for ${selectedEscalationWork?.id}.`);
+      onActionComplete(`Formal inquiry memo transmitted to District Authority (DA) via WhatsApp (+91 8778168629) for ${selectedEscalationWork?.id}.`);
       setSelectedEscalationWork(null);
-    }, 1000);
+    }, 600);
   };
 
   const handleCreateRecommendation = (e: React.FormEvent) => {
@@ -513,11 +537,18 @@ export const MpPortal: React.FC<MpPortalProps> = ({
                       Why Flagged?
                     </button>
                     <button
+                      onClick={() => sendWhatsAppMemo(work)}
+                      className="px-3 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-300 rounded hover:bg-emerald-100 flex items-center gap-1.5 cursor-pointer"
+                      title="Transmit directly to DA via WhatsApp (+91 8778168629)"
+                    >
+                      <Send className="w-3 h-3 text-emerald-600" />
+                      <span>Transmit to DA (WA)</span>
+                    </button>
+                    <button
                       onClick={() => openEscalationModal(work)}
                       className="px-3 py-1 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Send className="w-3 h-3" />
-                      <span>Ask District Authority</span>
+                      <span>Draft Inquiry Memo</span>
                     </button>
                     <button
                       onClick={() => onSelectWork(work)}
@@ -545,7 +576,7 @@ export const MpPortal: React.FC<MpPortalProps> = ({
                   </div>
                   <div>
                     <span className="text-slate-500 block text-[11px] font-medium">What MP Can Do:</span>
-                    <span className="text-slate-800 font-medium">{work.rootCause?.mpAction || 'Issue formal inquiry to District Magistrate.'}</span>
+                    <span className="text-slate-800 font-medium">{work.rootCause?.mpAction || 'Issue formal inquiry to District Authority (DA).'}</span>
                   </div>
                 </div>
               </div>
@@ -842,7 +873,7 @@ export const MpPortal: React.FC<MpPortalProps> = ({
                 className="px-4 py-2 bg-slate-900 text-white rounded text-xs font-semibold hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center gap-2"
               >
                 <Check className="w-4 h-4" />
-                <span>Submit Recommendation to District Magistrate ({currentMP.constituency})</span>
+                <span>Submit Recommendation to District Authority (DA, {currentMP.constituency})</span>
               </button>
             </div>
           </form>
@@ -852,10 +883,10 @@ export const MpPortal: React.FC<MpPortalProps> = ({
       {/* Escalation Draft Modal ("Ask District Authority") */}
       {selectedEscalationWork && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-lg border border-slate-200 shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in">
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+          <div className="bg-white rounded-lg border border-slate-300 max-w-xl w-full shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div className="bg-slate-100 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Send className="w-4 h-4 text-slate-700" />
+                <FileText className="w-4 h-4 text-slate-700" />
                 <h3 className="text-sm font-bold text-slate-900">
                   Ask District Authority — Formal Inquiry Memo
                 </h3>
@@ -874,7 +905,7 @@ export const MpPortal: React.FC<MpPortalProps> = ({
                   <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
                   <h4 className="font-bold text-emerald-900 text-sm">Formal Inquiry Dispatched</h4>
                   <p className="text-xs text-emerald-800">
-                    Your inquiry has been officially transmitted to the District Magistrate ({selectedEscalationWork?.district || currentMP.constituency}). Acknowledgment receipt logged in MARGA Evidence Ledger.
+                    Your inquiry has been officially transmitted to the District Authority (DA, {selectedEscalationWork?.district || currentMP.constituency}) via WhatsApp (+91 8778168629). Acknowledgment receipt logged in MARGA Evidence Ledger.
                   </p>
                 </div>
               ) : (
@@ -912,10 +943,10 @@ export const MpPortal: React.FC<MpPortalProps> = ({
                     </button>
                     <button
                       onClick={handleSendEscalation}
-                      className="px-4 py-1.5 font-medium text-white bg-slate-900 rounded hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-1.5 font-medium text-white bg-emerald-700 hover:bg-emerald-800 rounded flex items-center gap-1.5 cursor-pointer shadow-sm"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>Transmit to District Magistrate</span>
+                      <span>Transmit to DA WhatsApp (+91 8778168629)</span>
                     </button>
                   </div>
                 </>

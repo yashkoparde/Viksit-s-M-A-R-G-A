@@ -40,6 +40,21 @@ app.get('/api/sequence-manifest', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/sequence_manifest.json'));
 });
 
+// Dedicated Tech Stack Explainer Page (ByteMonk style video walkthrough)
+app.get('/explaining', (req, res) => {
+  res.sendFile(path.join(__dirname, '../explaining.html'));
+});
+
+// Dedicated 1080x1280 5-Model Interactive Architecture & Video Showcase
+app.get(['/models', '/models.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../models.html'));
+});
+
+// Dedicated Model 03 Geospatial Duplicate Radar Dashboard Showcase
+app.get(['/model3_dashboard', '/model3_dashboard.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../model3_dashboard.html'));
+});
+
 // API Routes
 app.use('/api/works', require('./routes/works'));
 app.use('/api/mps', require('./routes/mps'));

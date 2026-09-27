@@ -1,0 +1,10 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color emerald
+color sky
+color white
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+style Theme.MargaDark

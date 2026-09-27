@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="darkBg" cx="50%" cy="25%" r="85%">
+      <stop offset="0%" stop-color="#181D2A" />
+      <stop offset="55%" stop-color="#0E121B" />
+      <stop offset="100%" stop-color="#07090E" />
+    </radialGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#047857" />
+      <stop offset="60%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="saffronGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D3748" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#1A202C" stop-opacity="0.3" />
+    </linearGradient>
+  </defs>
+
+  <rect x="8" y="8" width="496" height="496" rx="116" fill="url(#darkBg)" />
+  <rect x="8" y="8" width="496" height="496" rx="116" fill="none" stroke="url(#borderGrad)" stroke-width="2.5" />
+
+  <g id="Emblem" transform="translate(0, 18)">
+    <circle cx="256" cy="132" r="42" fill="none" stroke="#38BDF8" stroke-width="3" stroke-dasharray="9 6" opacity="0.4" />
+    <circle cx="256" cy="132" r="28" fill="none" stroke="url(#skyGrad)" stroke-width="5" />
+    <circle cx="256" cy="132" r="12" fill="url(#skyGrad)" />
+    
+    <path d="M 124 366 L 124 300 C 124 195, 184 164, 236 164 L 248 190 C 206 192, 166 220, 166 296 L 166 366 Z" fill="url(#emeraldGrad)" />
+    <path d="M 388 366 L 388 300 C 388 195, 328 164, 276 164 L 264 190 C 306 192, 346 220, 346 296 L 346 366 Z" fill="url(#emeraldGrad)" />
+
+    <polygon points="256,236 228,188 284,188" fill="#38BDF8" />
+    <polygon points="256,246 196,366 316,366" fill="#111622" />
+
+    <line x1="256" y1="260" x2="256" y2="288" stroke="#38BDF8" stroke-width="5" stroke-linecap="round" />
+    <line x1="256" y1="304" x2="256" y2="352" stroke="url(#saffronGrad)" stroke-width="6.5" stroke-linecap="round" />
+
+    <rect x="176" y="366" width="160" height="7" rx="3.5" fill="#334155" />
+  </g>
+</svg>

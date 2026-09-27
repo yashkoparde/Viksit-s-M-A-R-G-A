@@ -27,6 +27,9 @@ import { IaPortal } from './components/ia/IaPortal';
 import { StatePortal } from './components/state/StatePortal';
 import { MospiPortal } from './components/mospi/MospiPortal';
 import { LandingStorySequence } from './components/landing/LandingStorySequence';
+import { PublicPortal } from './components/public/PublicPortal';
+import { MargaCinematicIntro } from './components/common/MargaCinematicIntro';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 export default function App() {
   // Authentication State
@@ -35,8 +38,9 @@ export default function App() {
   // Active Role State
   const [currentRole, setCurrentRole] = useState<Role>('MP');
 
-  // Chronological Application Stage: 'landing' (first) -> 'auth' (second) -> 'portal' (third)
-  const [appStage, setAppStage] = useState<'landing' | 'auth' | 'portal'>('landing');
+  // Chronological Application Stage: 'landing' (first) -> 'auth' (second) -> 'portal' (third) -> 'public' (open transparency)
+  const [appStage, setAppStage] = useState<'landing' | 'auth' | 'portal' | 'public'>('landing');
+  const [showCinematicIntro, setShowCinematicIntro] = useState<boolean>(true);
   const [selectedRoleForAuth, setSelectedRoleForAuth] = useState<Role>('MP');
   const [activeView, setActiveView] = useState<string>('overview');
 
@@ -175,16 +179,46 @@ export default function App() {
   // =========================================================================
   if (appStage === 'landing') {
     return (
-      <LandingStorySequence
-        onSelectRoleForAuth={(role) => {
-          setSelectedRoleForAuth(role);
-          setCurrentRole(role);
-          setAppStage('auth');
-        }}
-        currentUser={currentUser}
-        onProceedToDashboard={() => setAppStage('portal')}
-        onLogout={handleLogout}
-      />
+      <ErrorBoundary fallbackTitle="MARGA Landing View Recovery">
+        {showCinematicIntro && (
+          <MargaCinematicIntro onComplete={() => setShowCinematicIntro(false)} />
+        )}
+        <LandingStorySequence
+          onSelectRoleForAuth={(role) => {
+            setSelectedRoleForAuth(role);
+            setCurrentRole(role);
+            setAppStage('auth');
+          }}
+          onOpenPublicPortal={() => setAppStage('public')}
+          currentUser={currentUser}
+          onProceedToDashboard={() => setAppStage('portal')}
+          onLogout={handleLogout}
+        />
+      </ErrorBoundary>
+    );
+  }
+
+  // =========================================================================
+  // STEP 1.5: PUBLIC CITIZEN TRANSPARENCY GATEWAY (Open public inspection)
+  // =========================================================================
+  if (appStage === 'public') {
+    return (
+      <ErrorBoundary fallbackTitle="MARGA Public Portal Recovery">
+        <PublicPortal
+          works={works}
+          onBackToLanding={() => setAppStage('landing')}
+          onSelectWork={setSelectedWork}
+        />
+        {selectedWork && (
+          <WorkDetailDrawer
+            work={selectedWork}
+            isPublicView={true}
+            isOpen={!!selectedWork}
+            onClose={() => setSelectedWork(null)}
+            onOpenRiskExplanation={setRiskModalWork}
+          />
+        )}
+      </ErrorBoundary>
     );
   }
 

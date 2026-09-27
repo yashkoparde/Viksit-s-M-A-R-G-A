@@ -162,6 +162,22 @@ router.get('/', async (req, res) => {
       list = list.filter(w => w.state && w.state.toLowerCase().includes(state.toLowerCase()));
     }
 
+    if (constituency) {
+      list = list.filter(w => w.constituency && w.constituency.toLowerCase().includes(constituency.toLowerCase()));
+    }
+
+    if (mpName) {
+      list = list.filter(w => w.mpName && w.mpName.toLowerCase().includes(mpName.toLowerCase()));
+    }
+
+    if (district) {
+      list = list.filter(w => 
+        (w.district && w.district.toLowerCase().includes(district.toLowerCase())) ||
+        (w.ida && w.ida.toLowerCase().includes(district.toLowerCase())) ||
+        (w.constituency && w.constituency.toLowerCase().includes(district.toLowerCase()))
+      );
+    }
+
     if (status) {
       list = list.filter(w => w.status === status.toUpperCase());
     }

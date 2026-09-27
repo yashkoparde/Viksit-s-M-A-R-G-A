@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.marga.app.mp.app-merged_res-45:/drawable_marga_logo.png.flat",
+        "source": "com.marga.app.mp.app-main-47:/drawable/marga_logo.png"
+    },
+    {
+        "merged": "com.marga.app.mp.app-merged_res-45:/mipmap_ic_launcher_round.png.flat",
+        "source": "com.marga.app.mp.app-main-47:/mipmap/ic_launcher_round.png"
+    },
+    {
+        "merged": "com.marga.app.mp.app-merged_res-45:/mipmap_ic_launcher.png.flat",
+        "source": "com.marga.app.mp.app-main-47:/mipmap/ic_launcher.png"
+    },
+    {
+        "merged": "com.marga.app.mp.app-merged_res-45:/drawable_marga_logo_trans.png.flat",
+        "source": "com.marga.app.mp.app-main-47:/drawable/marga_logo_trans.png"
+    }
+]

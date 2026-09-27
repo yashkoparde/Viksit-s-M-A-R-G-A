@@ -594,10 +594,10 @@ export const LeafletProjectMap: React.FC<LeafletProjectMapProps> = ({
       preferCanvas: true,
     });
 
-    // 4. Base OpenStreetMap tiles with CartoDB fallback
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // 4. Esri World Topo Map (Reliable Beige Map - No 403 Blocks)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
     }).addTo(map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);

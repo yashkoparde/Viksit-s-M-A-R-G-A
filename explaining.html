@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M.A.R.G.A — Technical Architecture</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-title: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-body);
+      background-color: #060913;
+      color: #f1f5f9;
+      overflow: hidden;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-title { font-family: var(--font-title); }
+    .font-mono { font-family: var(--font-mono); }
+
+    /* Clean Architectural Main Box */
+    .arch-node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      z-index: 10;
+    }
+    .arch-card {
+      width: 175px;
+      height: 92px;
+      background: #0d121f;
+      border: 1.5px solid #1e293b;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .arch-node:hover .arch-card {
+      border-color: #38bdf8;
+      background: #111827;
+      transform: translateY(-2px);
+    }
+    .arch-node.active-node {
+      z-index: 25;
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+    .arch-node.active-node .arch-card {
+      border-color: #38bdf8;
+      background: #131c2e;
+      box-shadow: 0 0 0 1px #38bdf8, 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+    .arch-node.inactive-node {
+      opacity: 0.38;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+
+    /* Sub-Workflow Child Box (Clean: Tag + Title + Clean Neutral Spec, No Blue Bullets) */
+    .sub-arch-node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      z-index: 20;
+    }
+    .sub-arch-card {
+      width: 210px;
+      min-height: 110px;
+      background: #0d121f;
+      border: 1.5px solid #1e293b;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+    }
+    .sub-arch-node:hover .sub-arch-card {
+      border-color: #38bdf8;
+      background: #111827;
+    }
+    .sub-arch-node.active-sub {
+      z-index: 30;
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+    .sub-arch-node.active-sub .sub-arch-card {
+      border-color: #38bdf8;
+      background: #131c2e;
+      box-shadow: 0 0 0 1px #38bdf8, 0 12px 35px rgba(0, 0, 0, 0.85);
+    }
+    .sub-arch-node.inactive-sub {
+      opacity: 0.36;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+
+    /* Circuit Bus Vector Rails */
+    .wire-active {
+      stroke-dasharray: 6 6;
+      animation: wire-flow 1.4s linear infinite;
+    }
+    @keyframes wire-flow {
+      from { stroke-dashoffset: 24; }
+      to { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body class="h-screen w-screen relative bg-[#060913] flex flex-col justify-between select-none text-slate-100">
+
+  <!-- ========================================================================= -->
+  <!-- TOP BAR -->
+  <!-- ========================================================================= -->
+  <header class="relative z-30 px-6 py-3.5 flex items-center justify-between border-b border-slate-800 bg-[#080d1a]">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 px-3 py-1 bg-slate-900 border border-slate-700 rounded-md font-mono text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span class="font-bold text-slate-200">MARGA</span>
+        <span class="text-slate-500">/</span>
+        <span class="text-slate-400">SYSTEM ARCHITECTURE</span>
+      </div>
+      <div class="hidden sm:flex items-center gap-1.5 font-mono text-xs text-slate-400">
+        <span class="text-slate-500">STAGE</span>
+        <span id="stepCounter" class="text-slate-100 font-bold">1</span>
+        <span class="text-slate-600">/</span>
+        <span class="text-slate-500">7</span>
+      </div>
+    </div>
+
+    <!-- 7 System Tabs -->
+    <div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+      <button onclick="setNode(0)" id="pill-0" class="px-2.5 py-1 text-[11px] font-mono rounded border border-sky-500 bg-sky-950/50 text-slate-100 font-semibold transition">
+        01 MARGA-Eyes
+      </button>
+      <button onclick="setNode(1)" id="pill-1" class="px-2.5 py-1 text-[11px] font-mono rounded border border-transparent text-slate-400 hover:text-slate-200 transition">
+        02 Atlas Cluster0
+      </button>
+      <button onclick="setNode(2)" id="pill-2" class="px-2.5 py-1 text-[11px] font-mono rounded border border-transparent text-slate-400 hover:text-slate-200 transition">
+        03 Compliance AI
+      </button>
+      <button onclick="setNode(3)" id="pill-3" class="px-2.5 py-1 text-[11px] font-mono rounded border border-transparent text-slate-400 hover:text-slate-200 transition">
+        04 LightGBM Radar
+      </button>
+      <button onclick="setNode(4)" id="pill-4" class="px-2.5 py-1 text-[11px] font-mono rounded border border-transparent text-slate-400 hover:text-slate-200 transition">
+        05 BallTree 50m
+      </button>
+      <button onclick="setNode(5)" id="pill-5" class="px-2.5 py-1 text-[11px] font-mono rounded border border-transparent text-slate-400 hover:text-slate-200 transition">
+        06 WhatsApp Memo
+      </button>
+      <button onclick="setNode(6)" id="pill-6" class="px-2.5 py-1 text-[11px] font-mono rounded border border-transparent text-slate-400 hover:text-slate-200 transition">
+        07 Public Portal
+      </button>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center gap-2">
+      <button onclick="prevStep()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded text-xs font-mono flex items-center gap-1 transition">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden md:inline">Prev</span>
+      </button>
+      <button onclick="nextStep()" class="px-3 py-1 bg-slate-100 hover:bg-white text-slate-950 font-semibold rounded text-xs font-mono flex items-center gap-1.5 transition">
+        <span>Next</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN WORKFLOW (ONLY TOP RIGHT SVG ICON + MAIN TITLE IN BOXES) -->
+  <!-- ========================================================================= -->
+  <div id="canvasArea" class="relative flex-1 w-full h-full overflow-hidden flex items-center justify-center">
+
+    <!-- Bus Vector Circuit Rails -->
+    <svg id="svgCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0">
+      <path id="rail-0" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+      <path id="rail-1" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+      <path id="rail-2" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+      <path id="rail-3" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+      <path id="rail-4" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+      <path id="rail-5" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+
+      <!-- Clean Pulse Dot -->
+      <circle id="photonParticle" cx="0" cy="0" r="5" fill="#38bdf8"/>
+    </svg>
+
+    <!-- 01. MARGA-Eyes -->
+    <div id="node-0" onclick="handleNodeClick(0)" class="arch-node active-node">
+      <div class="arch-card">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-[10px] text-slate-400 font-semibold">01</span>
+          <i data-lucide="camera" class="w-4 h-4 text-slate-300"></i>
+        </div>
+        <div class="font-title text-base font-bold text-slate-100 tracking-tight">
+          MARGA-Eyes
+        </div>
+      </div>
+    </div>
+
+    <!-- 02. Atlas Cluster0 -->
+    <div id="node-1" onclick="handleNodeClick(1)" class="arch-node inactive-node">
+      <div class="arch-card">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-[10px] text-slate-400 font-semibold">02</span>
+          <i data-lucide="database" class="w-4 h-4 text-slate-300"></i>
+        </div>
+        <div class="font-title text-base font-bold text-slate-100 tracking-tight">
+          Atlas Cluster0
+        </div>
+      </div>
+    </div>
+
+    <!-- 03. Compliance AI -->
+    <div id="node-2" onclick="handleNodeClick(2)" class="arch-node inactive-node">
+      <div class="arch-card">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-[10px] text-slate-400 font-semibold">03</span>
+          <i data-lucide="binary" class="w-4 h-4 text-slate-300"></i>
+        </div>
+        <div class="font-title text-base font-bold text-slate-100 tracking-tight">
+          Compliance AI
+        </div>
+      </div>
+    </div>
+
+    <!-- 04. LightGBM Radar -->
+    <div id="node-3" onclick="handleNodeClick(3)" class="arch-node inactive-node">
+      <div class="arch-card">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-[10px] text-slate-400 font-semibold">04</span>
+          <i data-lucide="cpu" class="w-4 h-4 text-slate-300"></i>
+        </div>
+        <div class="font-title text-base font-bold text-slate-100 tracking-tight">
+          LightGBM Radar
+        </div>
+      </div>
+    </div>
+
+    <!-- 05. BallTree 50m -->
+    <div id="node-4" onclick="handleNodeClick(4)" class="arch-node inactive-node">
+      <div class="arch-card">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-[10px] text-slate-400 font-semibold">05</span>
+          <i data-lucide="map-pin" class="w-4 h-4 text-slate-300"></i>
+        </div>
+        <div class="font-title text-base font-bold text-slate-100 tracking-tight">
+          BallTree 50m
+        </div>
+      </div>
+    </div>
+
+    <!-- 06. WhatsApp Memo -->
+    <div id="node-5" onclick="handleNodeClick(5)" class="arch-node inactive-node">
+      <div class="arch-card">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-[10px] text-slate-400 font-semibold">06</span>
+          <i data-lucide="message-square" class="w-4 h-4 text-slate-300"></i>
+        </div>
+        <div class="font-title text-base font-bold text-slate-100 tracking-tight">
+          WhatsApp Memo
+        </div>
+      </div>
+    </div>
+
+    <!-- 07. Public Portal -->
+    <div id="node-6" onclick="handleNodeClick(6)" class="arch-node inactive-node">
+      <div class="arch-card">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-[10px] text-slate-400 font-semibold">07</span>
+          <i data-lucide="globe" class="w-4 h-4 text-slate-300"></i>
+        </div>
+        <div class="font-title text-base font-bold text-slate-100 tracking-tight">
+          Public Portal
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- DEDICATED OPAQUE SUB-WORKFLOW CANVAS (NO BLUE BULLETS, CLEAN NEUTRAL UI) -->
+  <!-- ========================================================================= -->
+  <div id="subBlobOverlay" class="fixed inset-0 z-50 bg-[#040711] flex flex-col justify-between opacity-0 pointer-events-none transition-opacity duration-200 overflow-hidden">
+    
+    <!-- Sub-Workflow Top Navigation -->
+    <div class="relative z-30 px-6 py-3.5 border-b border-slate-800 bg-[#080d1a] flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="closeSubBlobs()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 rounded text-xs font-mono flex items-center gap-1.5 transition">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Overview</span>
+        </button>
+        <div class="flex items-center gap-2 font-mono text-xs text-slate-400">
+          <span>WORKFLOW:</span>
+          <span id="subModuleBadge" class="text-slate-100 font-bold"></span>
+          <span class="text-slate-600">/</span>
+          <span>STEP <span id="subStepNumber" class="text-slate-100 font-bold">1</span> OF 4</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="prevSubNode()" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded text-xs font-mono">&larr; Prev</button>
+        <button onclick="nextSubNode()" class="px-3 py-1 bg-slate-100 hover:bg-white text-slate-950 font-semibold rounded text-xs font-mono">Next &rarr;</button>
+      </div>
+    </div>
+
+    <!-- Sub-Workflow Canvas Area -->
+    <div class="relative w-full flex-1 flex items-center justify-center overflow-hidden">
+
+      <!-- Sub-Pathway Vector Wires -->
+      <svg id="subSvgCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-10">
+        <path id="sub-rail-0" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+        <path id="sub-rail-1" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+        <path id="sub-rail-2" d="" fill="none" stroke="#1e293b" stroke-width="2.5"/>
+
+        <circle id="subPhotonParticle" cx="0" cy="0" r="5" fill="#38bdf8"/>
+      </svg>
+
+      <!-- 4 Clean Architectural Sub-Nodes: Top-Right SVG + Title + Neutral Spec (NO BLUE BULLETS) -->
+      <div id="sub-node-0" onclick="setSubNode(0)" class="sub-arch-node active-sub">
+        <div class="sub-arch-card">
+          <div class="flex items-center justify-between">
+            <span id="sub-tag-0" class="font-mono text-[10px] text-slate-400 font-semibold tracking-wide"></span>
+            <div id="sub-icon-0" class="w-4 h-4 text-slate-300"></div>
+          </div>
+          <div id="sub-title-0" class="font-title text-sm font-bold text-slate-100 tracking-tight my-1"></div>
+          <div id="sub-metric-0" class="font-mono text-[11px] text-slate-400"></div>
+        </div>
+      </div>
+
+      <div id="sub-node-1" onclick="setSubNode(1)" class="sub-arch-node inactive-sub">
+        <div class="sub-arch-card">
+          <div class="flex items-center justify-between">
+            <span id="sub-tag-1" class="font-mono text-[10px] text-slate-400 font-semibold tracking-wide"></span>
+            <div id="sub-icon-1" class="w-4 h-4 text-slate-300"></div>
+          </div>
+          <div id="sub-title-1" class="font-title text-sm font-bold text-slate-100 tracking-tight my-1"></div>
+          <div id="sub-metric-1" class="font-mono text-[11px] text-slate-400"></div>
+        </div>
+      </div>
+
+      <div id="sub-node-2" onclick="setSubNode(2)" class="sub-arch-node inactive-sub">
+        <div class="sub-arch-card">
+          <div class="flex items-center justify-between">
+            <span id="sub-tag-2" class="font-mono text-[10px] text-slate-400 font-semibold tracking-wide"></span>
+            <div id="sub-icon-2" class="w-4 h-4 text-slate-300"></div>
+          </div>
+          <div id="sub-title-2" class="font-title text-sm font-bold text-slate-100 tracking-tight my-1"></div>
+          <div id="sub-metric-2" class="font-mono text-[11px] text-slate-400"></div>
+        </div>
+      </div>
+
+      <div id="sub-node-3" onclick="setSubNode(3)" class="sub-arch-node inactive-sub">
+        <div class="sub-arch-card">
+          <div class="flex items-center justify-between">
+            <span id="sub-tag-3" class="font-mono text-[10px] text-slate-400 font-semibold tracking-wide"></span>
+            <div id="sub-icon-3" class="w-4 h-4 text-slate-300"></div>
+          </div>
+          <div id="sub-title-3" class="font-title text-sm font-bold text-slate-100 tracking-tight my-1"></div>
+          <div id="sub-metric-3" class="font-mono text-[11px] text-slate-400"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sub-Workflow Presenter Cue Dock -->
+    <div class="relative z-30 px-6 py-3 border-t border-slate-800 bg-[#080d1a] flex items-center justify-between">
+      <div class="flex items-center gap-2.5 overflow-hidden">
+        <div class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></div>
+        <div id="subUniverseCue" class="font-mono text-xs text-slate-200 truncate"></div>
+      </div>
+      <div class="text-[11px] font-mono text-slate-400 shrink-0">
+        [Press Space to Advance]
+      </div>
+    </div>
+  </div>
+
+  <!-- MINIMAL 1-LINE DOCK (MAIN) -->
+  <footer class="relative z-30 px-6 py-3 border-t border-slate-800 bg-[#080d1a]">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 overflow-hidden cursor-pointer" onclick="openSubBlobs(activeNode)">
+        <div class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></div>
+        <div id="universeCue" class="font-mono text-xs text-slate-200 truncate"></div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="openSubBlobs(activeNode)" class="px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-slate-200 rounded flex items-center gap-1.5 transition">
+          <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+          <span>Open Workflow</span>
+        </button>
+        <a href="/" target="_blank" class="px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-slate-400 hover:text-slate-200 rounded flex items-center gap-1.5 transition">
+          <span>Live Demo</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // 7-Node Constellation Coordinates
+    const UNIVERSE_POSITIONS = [
+      { x: 8,  y: 50 },  // 0: MARGA-Eyes
+      { x: 22, y: 32 },  // 1: Atlas Lake
+      { x: 36, y: 68 },  // 2: Annexure II NLP
+      { x: 50, y: 32 },  // 3: LightGBM Radar
+      { x: 64, y: 68 },  // 4: BallTree 50m
+      { x: 78, y: 32 },  // 5: WhatsApp Memo
+      { x: 92, y: 50 }   // 6: Open Soil
+    ];
+
+    // 4-Node Sub-Pathway Coordinates
+    const SUB_POSITIONS = [
+      { x: 16, y: 46 },
+      { x: 38, y: 32 },
+      { x: 62, y: 66 },
+      { x: 84, y: 46 }
+    ];
+
+    // Clean Dataset (Neutral, Professional, Codebase Accurate)
+    const UNIVERSE_DATA = [
+      {
+        title: "MARGA-Eyes",
+        badge: "MARGA-Eyes",
+        cue: "CameraX locks the hardware lens: gallery uploads permanently disabled, GPS & time stamped into EXIF.",
+        subBlobs: [
+          {
+            tag: "STAGE 01",
+            title: "CameraX Lock",
+            icon: "camera",
+            metric: "No Gallery Upload",
+            cue: "Kernel-level gallery intent stripped: live photon sensor binding only."
+          },
+          {
+            tag: "STAGE 02",
+            title: "EXIF Satellite Stamp",
+            icon: "shield-check",
+            metric: "GPS ±1.2m & Azimuth",
+            cue: "Hardware satellite GPS coordinates, compass azimuth, and SHA-256 hash stamped into raw pixels."
+          },
+          {
+            tag: "STAGE 03",
+            title: "Offline SQLite Cache",
+            icon: "hard-drive",
+            metric: "AES-256 Rural Buffer",
+            cue: "Zero 4G rural worksites: inspections cached with AES-256, auto-flushing on reconnect."
+          },
+          {
+            tag: "STAGE 04",
+            title: "Exifr Binary Hook",
+            icon: "server",
+            metric: "<5ms Express Parse",
+            cue: "Express parses binary buffer in under 5ms, validating district boundary coordinates."
+          }
+        ]
+      },
+      {
+        title: "Atlas Cluster0",
+        badge: "Atlas Cluster0",
+        cue: "MongoDB Atlas Cluster0 stores 130,882 projects with fallback DNS SRV (8.8.8.8) for zero downtime.",
+        subBlobs: [
+          {
+            tag: "STAGE 01",
+            title: "Authoritative Ledger",
+            icon: "folder-kanban",
+            metric: "130,882+ Works",
+            cue: "Flexible document store handles diverse state formats across years without schema migration crashes."
+          },
+          {
+            tag: "STAGE 02",
+            title: "774 MP Portfolios",
+            icon: "users",
+            metric: "LS & RS Entitlements",
+            cue: "Every Lok Sabha and Rajya Sabha seat mapped with ₹5 Cr annual entitlement tracking."
+          },
+          {
+            tag: "STAGE 03",
+            title: "DNS SRV Shield",
+            icon: "network",
+            metric: "8.8.8.8 & 1.1.1.1 Fallback",
+            cue: "Explicit 8.8.8.8 and 1.1.1.1 DNS servers prevent government Wi-Fi cluster dropouts."
+          },
+          {
+            tag: "STAGE 04",
+            title: "Air-Gap Resilience",
+            icon: "database-zap",
+            metric: "Disk JSON Dual-Store",
+            cue: "If internet drops during judging, system seamlessly flips to local JSON document store."
+          }
+        ]
+      },
+      {
+        title: "Compliance AI",
+        badge: "Compliance AI",
+        cue: "Multi-tier NLP validates statutory guidelines: Regex for instant speed, MiniLM for semantic tricks, SpaCy NER for civic context.",
+        subBlobs: [
+          {
+            tag: "STAGE 01",
+            title: "Deterministic Regex",
+            icon: "zap",
+            metric: "<0.2ms Speed Filter",
+            cue: "Instant regex filter terminates obvious maintenance and memorial requests in 0.2ms."
+          },
+          {
+            tag: "STAGE 02",
+            title: "MiniLM Embeddings",
+            icon: "binary",
+            metric: "Cosine Match > 0.68",
+            cue: "all-MiniLM-L6-v2 catches semantic camouflage like 'sacred community pavilion' above 0.68 threshold."
+          },
+          {
+            tag: "STAGE 03",
+            title: "SpaCy Entity Graph",
+            icon: "brain-circuit",
+            metric: "Contextual Parser",
+            cue: "SpaCy Named Entity Recognition prevents false flags: a drainage road near a temple is recognized as civic."
+          },
+          {
+            tag: "STAGE 04",
+            title: "Statutory Gates",
+            icon: "scale",
+            metric: "Annexure II Enforcement",
+            cue: "Strict statutory enforcement banning commercial structures, private trusts, and places of worship."
+          }
+        ]
+      },
+      {
+        title: "LightGBM Radar",
+        badge: "LightGBM Radar",
+        cue: "LightGBM + TreeSHAP gives plain-English cost justifications instead of black-box guesses.",
+        subBlobs: [
+          {
+            tag: "STAGE 01",
+            title: "PWD Baselines",
+            icon: "bar-chart-2",
+            metric: "15k Past Works Model",
+            cue: "Trained on 15,000+ past audited works, benchmarking 90-day regional material and labor costs."
+          },
+          {
+            tag: "STAGE 02",
+            title: "LightGBM Booster",
+            icon: "cpu",
+            metric: "Sub-ms Inference",
+            cue: "Ultra-fast gradient boosted decision trees executing in sub-millisecond cycles on low-cost compute."
+          },
+          {
+            tag: "STAGE 03",
+            title: "TreeSHAP Proof",
+            icon: "file-text",
+            metric: "Court-Admissible Proof",
+            cue: "Game-theoretic Shapley values produce court-admissible proof: '+42% Excavation Cost Anomaly'."
+          },
+          {
+            tag: "STAGE 04",
+            title: "Risk Scoring Formula",
+            icon: "alert-triangle",
+            metric: "0-100 Anomaly Index",
+            cue: "Weighted composite risk formula fusing Cost Z-scores, duration stalls, and fund draw mismatches."
+          }
+        ]
+      },
+      {
+        title: "BallTree 50m",
+        badge: "BallTree 50m",
+        cue: "BallTree Haversine scans a 50m radius across schemes to instantly kill duplicate double-billing.",
+        subBlobs: [
+          {
+            tag: "STAGE 01",
+            title: "Haversine Curvature",
+            icon: "globe-2",
+            metric: "GPS Spherical Radians",
+            cue: "GPS coordinates transformed into spherical radians for sub-meter geographical distance precision."
+          },
+          {
+            tag: "STAGE 02",
+            title: "O(N log N) Tree",
+            icon: "git-fork",
+            metric: "Instant Radius Query",
+            cue: "Scikit-Learn BallTree indexes 130k projects in seconds, avoiding O(N^2) pairwise computational freezing."
+          },
+          {
+            tag: "STAGE 03",
+            title: "Dedup Isolation",
+            icon: "shield-alert",
+            metric: "Kill Double-Billing",
+            cue: "Instantly flags if the same road or culvert was already financed under MLA or Panchayat funds."
+          },
+          {
+            tag: "STAGE 04",
+            title: "10% DA Tour Route",
+            icon: "navigation",
+            metric: "3-Day Itinerary Path",
+            cue: "Transforms the mandatory 10% annual inspection quota into a 3-day turn-by-turn driving itinerary."
+          }
+        ]
+      },
+      {
+        title: "WhatsApp Memo",
+        badge: "WhatsApp Memo",
+        cue: "MP clicks 'Ask District Authority Why?' -> Instant official WhatsApp inquiry memo to the Collector.",
+        subBlobs: [
+          {
+            tag: "STAGE 01",
+            title: "Progress Radar",
+            icon: "landmark",
+            metric: "Constitutional Rep MP",
+            cue: "Elected MPs gain real-time visibility on recommendations, sanctions, and completion percentages."
+          },
+          {
+            tag: "STAGE 02",
+            title: "'Ask DA Why?'",
+            icon: "message-circle",
+            metric: "Official Memo Docket",
+            cue: "A single click auto-formats a formal inquiry docket and transmits it to the District Collector's WhatsApp."
+          },
+          {
+            tag: "STAGE 03",
+            title: "Collector Inbox",
+            icon: "inbox",
+            metric: "Linked Milestone Evidence",
+            cue: "District Collector receives linked project milestones and engineer notes without manual paper searching."
+          },
+          {
+            tag: "STAGE 04",
+            title: "Audit Ledger",
+            icon: "history",
+            metric: "Permanent Event Log",
+            cue: "Every question and response is permanently recorded in the tamper-proof platform audit ledger."
+          }
+        ]
+      },
+      {
+        title: "Public Portal",
+        badge: "Public Portal",
+        cue: "Zero-barrier citizen transparency: public funds, progress milestones, and verified photos with no login required.",
+        subBlobs: [
+          {
+            tag: "STAGE 01",
+            title: "Zero Auth Gateway",
+            icon: "unlock",
+            metric: "No Password / Login",
+            cue: "Public citizens can freely search by village or district without government credentials or login barriers."
+          },
+          {
+            tag: "STAGE 02",
+            title: "Every Rupee Audited",
+            icon: "indian-rupee",
+            metric: "Fiscal Transparency",
+            cue: "Inspect sanctioned outlay, disbursed funds, contractor identity, and certified physical progress."
+          },
+          {
+            tag: "STAGE 03",
+            title: "CameraX Ground Proof",
+            icon: "image",
+            metric: "Embedded EXIF Photos",
+            cue: "Citizens inspect tamper-proof on-site CameraX photos with embedded GPS coordinates."
+          },
+          {
+            tag: "STAGE 04",
+            title: "State Separation",
+            icon: "shield",
+            metric: "Fearless Governance",
+            cue: "Confidential internal deliberations remain protected, while the ground truth belongs to the public."
+          }
+        ]
+      }
+    ];
+
+    let activeNode = 0;
+    let activeSubNode = 0;
+    let isSubBlobOpen = false;
+
+    function layoutUniverse() {
+      const w = window.innerWidth;
+      const h = window.innerHeight - 110;
+
+      UNIVERSE_POSITIONS.forEach((pos, idx) => {
+        const el = document.getElementById('node-' + idx);
+        const actualX = (pos.x / 100) * w;
+        const actualY = (pos.y / 100) * h + 55;
+        el.style.left = actualX + 'px';
+        el.style.top = actualY + 'px';
+      });
+
+      for (let i = 0; i < 6; i++) {
+        const p1 = UNIVERSE_POSITIONS[i];
+        const p2 = UNIVERSE_POSITIONS[i + 1];
+        const x1 = (p1.x / 100) * w;
+        const y1 = (p1.y / 100) * h + 55;
+        const x2 = (p2.x / 100) * w;
+        const y2 = (p2.y / 100) * h + 55;
+
+        const cx1 = x1 + (x2 - x1) * 0.5;
+        const cy1 = y1;
+        const cx2 = x1 + (x2 - x1) * 0.5;
+        const cy2 = y2;
+
+        const d = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+        document.getElementById('rail-' + i).setAttribute('d', d);
+      }
+    }
+
+    function layoutSubUniverse() {
+      const w = window.innerWidth;
+      const h = window.innerHeight - 130;
+
+      SUB_POSITIONS.forEach((pos, idx) => {
+        const el = document.getElementById('sub-node-' + idx);
+        const actualX = (pos.x / 100) * w;
+        const actualY = (pos.y / 100) * h + 65;
+        el.style.left = actualX + 'px';
+        el.style.top = actualY + 'px';
+      });
+
+      for (let i = 0; i < 3; i++) {
+        const p1 = SUB_POSITIONS[i];
+        const p2 = SUB_POSITIONS[i + 1];
+        const x1 = (p1.x / 100) * w;
+        const y1 = (p1.y / 100) * h + 65;
+        const x2 = (p2.x / 100) * w;
+        const y2 = (p2.y / 100) * h + 65;
+
+        const cx1 = x1 + (x2 - x1) * 0.5;
+        const cy1 = y1;
+        const cx2 = x1 + (x2 - x1) * 0.5;
+        const cy2 = y2;
+
+        const d = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+        document.getElementById('sub-rail-' + i).setAttribute('d', d);
+      }
+    }
+
+    function updateUniverseState() {
+      const w = window.innerWidth;
+      const h = window.innerHeight - 110;
+
+      for (let i = 0; i < 7; i++) {
+        const nodeEl = document.getElementById('node-' + i);
+        const pillEl = document.getElementById('pill-' + i);
+        if (i === activeNode) {
+          nodeEl.className = 'arch-node active-node';
+          pillEl.className = 'px-2.5 py-1 text-[11px] font-mono rounded border border-sky-500 bg-sky-950/50 text-slate-100 font-semibold transition';
+        } else {
+          nodeEl.className = 'arch-node inactive-node';
+          pillEl.className = 'px-2.5 py-1 text-[11px] font-mono rounded border border-transparent text-slate-400 hover:text-slate-200 transition';
+        }
+      }
+
+      for (let i = 0; i < 6; i++) {
+        const rail = document.getElementById('rail-' + i);
+        if (i < activeNode) {
+          rail.setAttribute('stroke', '#38bdf8');
+          rail.setAttribute('stroke-width', '3');
+          rail.classList.add('wire-active');
+        } else {
+          rail.setAttribute('stroke', '#1e293b');
+          rail.setAttribute('stroke-width', '2.5');
+          rail.classList.remove('wire-active');
+        }
+      }
+
+      const targetPos = UNIVERSE_POSITIONS[activeNode];
+      const targetX = (targetPos.x / 100) * w;
+      const targetY = (targetPos.y / 100) * h + 55;
+
+      const photon = document.getElementById('photonParticle');
+      photon.setAttribute('cx', targetX);
+      photon.setAttribute('cy', targetY);
+
+      document.getElementById('stepCounter').innerText = activeNode + 1;
+      document.getElementById('universeCue').innerText = `"${UNIVERSE_DATA[activeNode].cue}"`;
+    }
+
+    function updateSubUniverseState() {
+      const w = window.innerWidth;
+      const h = window.innerHeight - 130;
+      const data = UNIVERSE_DATA[activeNode];
+
+      document.getElementById('subModuleBadge').innerText = data.badge;
+      document.getElementById('subStepNumber').innerText = activeSubNode + 1;
+
+      for (let i = 0; i < 4; i++) {
+        const sub = data.subBlobs[i];
+        const subNode = document.getElementById('sub-node-' + i);
+        
+        if (i === activeSubNode) {
+          subNode.className = 'sub-arch-node active-sub';
+        } else {
+          subNode.className = 'sub-arch-node inactive-sub';
+        }
+
+        document.getElementById('sub-tag-' + i).innerText = sub.tag;
+        document.getElementById('sub-icon-' + i).innerHTML = `<i data-lucide="${sub.icon}" class="w-4 h-4 text-slate-300"></i>`;
+        document.getElementById('sub-title-' + i).innerText = sub.title;
+        document.getElementById('sub-metric-' + i).innerText = sub.metric;
+      }
+
+      lucide.createIcons();
+
+      for (let i = 0; i < 3; i++) {
+        const rail = document.getElementById('sub-rail-' + i);
+        if (i < activeSubNode) {
+          rail.setAttribute('stroke', '#38bdf8');
+          rail.setAttribute('stroke-width', '3');
+          rail.classList.add('wire-active');
+        } else {
+          rail.setAttribute('stroke', '#1e293b');
+          rail.setAttribute('stroke-width', '2.5');
+          rail.classList.remove('wire-active');
+        }
+      }
+
+      const currentSub = data.subBlobs[activeSubNode];
+      const targetPos = SUB_POSITIONS[activeSubNode];
+      const targetX = (targetPos.x / 100) * w;
+      const targetY = (targetPos.y / 100) * h + 65;
+
+      const subPhoton = document.getElementById('subPhotonParticle');
+      subPhoton.setAttribute('cx', targetX);
+      subPhoton.setAttribute('cy', targetY);
+
+      document.getElementById('subUniverseCue').innerText = `"${currentSub.cue}"`;
+    }
+
+    function openSubBlobs(idx) {
+      activeNode = idx;
+      activeSubNode = 0;
+      updateUniverseState();
+      isSubBlobOpen = true;
+
+      const overlay = document.getElementById('subBlobOverlay');
+      overlay.classList.remove('opacity-0', 'pointer-events-none');
+      overlay.classList.add('opacity-100');
+
+      layoutSubUniverse();
+      updateSubUniverseState();
+    }
+
+    function closeSubBlobs() {
+      const overlay = document.getElementById('subBlobOverlay');
+      overlay.classList.remove('opacity-100');
+      overlay.classList.add('opacity-0', 'pointer-events-none');
+      isSubBlobOpen = false;
+      updateUniverseState();
+    }
+
+    function handleNodeClick(idx) {
+      openSubBlobs(idx);
+    }
+
+    function setNode(idx) {
+      activeNode = idx;
+      updateUniverseState();
+      if (isSubBlobOpen) {
+        openSubBlobs(idx);
+      }
+    }
+
+    function setSubNode(idx) {
+      activeSubNode = idx;
+      updateSubUniverseState();
+    }
+
+    function nextSubNode() {
+      activeSubNode = (activeSubNode + 1) % 4;
+      updateSubUniverseState();
+    }
+
+    function prevSubNode() {
+      activeSubNode = (activeSubNode - 1 + 4) % 4;
+      updateSubUniverseState();
+    }
+
+    function nextStep() {
+      if (isSubBlobOpen) {
+        if (activeSubNode < 3) {
+          nextSubNode();
+        } else {
+          activeNode = (activeNode + 1) % 7;
+          openSubBlobs(activeNode);
+        }
+      } else {
+        activeNode = (activeNode + 1) % 7;
+        updateUniverseState();
+      }
+    }
+
+    function prevStep() {
+      if (isSubBlobOpen) {
+        if (activeSubNode > 0) {
+          prevSubNode();
+        } else {
+          activeNode = (activeNode - 1 + 7) % 7;
+          openSubBlobs(activeNode);
+          activeSubNode = 3;
+          updateSubUniverseState();
+        }
+      } else {
+        activeNode = (activeNode - 1 + 7) % 7;
+        updateUniverseState();
+      }
+    }
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeSubBlobs();
+      } else if (e.code === 'Space' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextStep();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevStep();
+      } else if (e.key === 'Enter') {
+        if (!isSubBlobOpen) openSubBlobs(activeNode);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      layoutUniverse();
+      updateUniverseState();
+      if (isSubBlobOpen) {
+        layoutSubUniverse();
+        updateSubUniverseState();
+      }
+    });
+
+    layoutUniverse();
+    updateUniverseState();
+  </script>
+</body>
+</html>

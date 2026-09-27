@@ -4,7 +4,8 @@ node_modules
 .env
 .env.local
 MARGA ML
-marga-eyes
+marga-ml
+mobile
 npm-debug.log
 yarn-error.log
 .DS_Store

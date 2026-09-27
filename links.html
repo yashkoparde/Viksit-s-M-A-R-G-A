@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M.A.R.G.A - Project Links & Demonstration Portal</title>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-main: #060913;
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --portal-accent: #38bdf8;
+      --portal-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      --portal-glow: rgba(56, 189, 248, 0.35);
+      
+      --ai-accent: #c084fc;
+      --ai-gradient: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+      --ai-glow: rgba(192, 132, 252, 0.35);
+      
+      --yt-accent: #f87171;
+      --yt-gradient: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+      --yt-glow: rgba(248, 113, 113, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Professional Mesh Background with Animated Subtle Glows */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 90% 15%, rgba(192, 132, 252, 0.12) 0px, transparent 50%),
+        radial-gradient(at 50% 85%, rgba(248, 113, 113, 0.1) 0px, transparent 50%),
+        radial-gradient(at 80% 80%, rgba(15, 23, 42, 0.8) 0px, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* Grid overlay pattern */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      z-index: 1;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3.25rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+    }
+
+    .icon-wrapper {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      transition: transform 0.35s ease;
+    }
+
+    .card-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+    }
+
+    .card-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2.25rem;
+      flex-grow: 1;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.85rem 1.5rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      width: 100%;
+      border: 1px solid transparent;
+    }
+
+    .action-btn i {
+      transition: transform 0.3s ease;
+    }
+
+    /* Portal Box Styling */
+    .card-portal .icon-wrapper {
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--portal-accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+    .card-portal:hover {
+      transform: translateY(-6px);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 20px 40px -15px var(--portal-glow);
+    }
+    .card-portal:hover .icon-wrapper {
+      transform: scale(1.08);
+      background: var(--portal-gradient);
+      color: #060913;
+    }
+    .card-portal .action-btn {
+      color: var(--portal-accent);
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.2);
+    }
+    .card-portal:hover .action-btn {
+      background: var(--portal-gradient);
+      color: #060913;
+      border-color: transparent;
+    }
+    .card-portal:hover .action-btn i {
+      transform: translateX(4px);
+    }
+
+    /* AI Models Box Styling */
+    .card-ai .icon-wrapper {
+      background: rgba(192, 132, 252, 0.12);
+      color: var(--ai-accent);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+    }
+    .card-ai:hover {
+      transform: translateY(-6px);
+      border-color: rgba(192, 132, 252, 0.5);
+      box-shadow: 0 20px 40px -15px var(--ai-glow);
+    }
+    .card-ai:hover .icon-wrapper {
+      transform: scale(1.08);
+      background: var(--ai-gradient);
+      color: #ffffff;
+    }
+    .card-ai .action-btn {
+      color: var(--ai-accent);
+      background: rgba(192, 132, 252, 0.08);
+      border-color: rgba(192, 132, 252, 0.2);
+    }
+    .card-ai:hover .action-btn {
+      background: var(--ai-gradient);
+      color: #ffffff;
+      border-color: transparent;
+    }
+    .card-ai:hover .action-btn i {
+      transform: translateX(4px);
+    }
+
+    /* YouTube Box Styling */
+    .card-yt .icon-wrapper {
+      background: rgba(248, 113, 113, 0.12);
+      color: var(--yt-accent);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+    .card-yt:hover {
+      transform: translateY(-6px);
+      border-color: rgba(248, 113, 113, 0.5);
+      box-shadow: 0 20px 40px -15px var(--yt-glow);
+    }
+    .card-yt:hover .icon-wrapper {
+      transform: scale(1.08);
+      background: var(--yt-gradient);
+      color: #ffffff;
+    }
+    .card-yt .action-btn {
+      color: var(--yt-accent);
+      background: rgba(248, 113, 113, 0.08);
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+    .card-yt:hover .action-btn {
+      background: var(--yt-gradient);
+      color: #ffffff;
+      border-color: transparent;
+    }
+    .card-yt:hover .action-btn i {
+      transform: translateX(4px);
+    }
+
+    footer {
+      margin-top: 4.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 2rem;
+    }
+
+    @media (max-width: 992px) {
+      .grid {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      header h1 {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-canvas"></div>
+  <div class="bg-grid"></div>
+
+  <div class="container">
+    <header>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Evaluation & Deployment Hub
+      </div>
+      <h1>M.A.R.G.A Project Portal</h1>
+      <p>Multi-Role Civic Infrastructure Operating System for MPLADS Project Verification, Intelligence & Auditing</p>
+    </header>
+
+    <div class="grid">
+      <!-- Box 1: Web Portal Link -->
+      <a href="index.html" class="card card-portal">
+        <div class="card-header-row">
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <span class="card-tag">Core Application</span>
+        </div>
+        <h2 class="card-title">Web Portal</h2>
+        <p class="card-desc">Access the 6 multi-role stakeholder portals including MP Sanctioning, Collector Approvals, Implementing Agency Disbursal, and Public Transparency.</p>
+        <span class="action-btn">
+          Open Web Portal <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </span>
+      </a>
+
+      <!-- Box 2: AI Models Link -->
+      <a href="models.html" class="card card-ai">
+        <div class="card-header-row">
+          <div class="icon-wrapper">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+          <span class="card-tag">ML Intelligence</span>
+        </div>
+        <h2 class="card-title">AI Models Suite</h2>
+        <p class="card-desc">Explore the 5 specialized machine learning engines for Risk Inspection Routing, PWD Cost Prediction, EXIF Verification, and 500m Duplicate Radar.</p>
+        <span class="action-btn">
+          Launch AI Dashboard <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </span>
+      </a>
+
+      <!-- Box 3: YouTube Channel Link -->
+      <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" class="card card-yt">
+        <div class="card-header-row">
+          <div class="icon-wrapper">
+            <i class="fa-brands fa-youtube"></i>
+          </div>
+          <span class="card-tag">Video Walkthrough</span>
+        </div>
+        <h2 class="card-title">YouTube Channel</h2>
+        <p class="card-desc">Watch comprehensive video demonstrations, system walkthroughs, live mobile geotagging verification, and technical presentations.</p>
+        <span class="action-btn">
+          Watch Channel Demonstration <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </span>
+      </a>
+    </div>
+
+    <footer>
+      M.A.R.G.A Civic Infrastructure & Intelligence Platform &bull; Deployed Evaluation Portal
+    </footer>
+  </div>
+
+</body>
+</html>

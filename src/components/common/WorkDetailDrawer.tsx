@@ -23,6 +23,7 @@ interface WorkDetailDrawerProps {
   role?: Role;
   currentRole?: Role;
   isOpen?: boolean;
+  isPublicView?: boolean;
   onClose: () => void;
   onOpenRiskExplanation: (work: Work) => void;
   onOpenEscalation?: (work: Work) => void;
@@ -35,6 +36,7 @@ export const WorkDetailDrawer: React.FC<WorkDetailDrawerProps> = ({
   role,
   currentRole,
   isOpen,
+  isPublicView = false,
   onClose,
   onOpenRiskExplanation,
   onOpenEscalation,
@@ -195,16 +197,18 @@ export const WorkDetailDrawer: React.FC<WorkDetailDrawerProps> = ({
           >
             Lifecycle Audit Log
           </button>
-          <button
-            onClick={() => setActiveTab('actions')}
-            className={`py-2.5 text-xs font-medium border-b-2 transition-colors ${
-              activeTab === 'actions'
-                ? 'border-slate-900 text-slate-900 font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Permitted Actions ({role})
-          </button>
+          {!isPublicView && (
+            <button
+              onClick={() => setActiveTab('actions')}
+              className={`py-2.5 text-xs font-medium border-b-2 transition-colors ${
+                activeTab === 'actions'
+                  ? 'border-slate-900 text-slate-900 font-semibold'
+                  : 'border-transparent text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              Permitted Actions ({role})
+            </button>
+          )}
         </div>
 
         {/* Tab Body */}
