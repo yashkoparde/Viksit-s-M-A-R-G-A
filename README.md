@@ -13,95 +13,7 @@ By unifying six distinct stakeholder portals, five specialized machine learning 
 
 ---
 
-## High-Level System Architecture
-
-The MARGA platform operates on a modular, decoupled architecture consisting of a React-TypeScript Web Portal suite, an Express REST API backend, a Python ML inference microservice, and native Android applications.
-
-```mermaid
-graph TD
-    subgraph Client Presentation Layer
-        MP[MP Portal - React TS]
-        DA[DA Collector Portal - React TS]
-        IA[Implementing Agency Portal - React TS]
-        SNO[State Nodal Officer Portal - React TS]
-        MOSPI[MoSPI National Portal - React TS]
-        PUB[Public Transparency Portal - React TS]
-        EYES[MARGA Eyes - Android Camera App]
-    end
-
-    subgraph API & Gateway Layer
-        GW[Express REST API Gateway - Node.js]
-        AUTH[Role-Based Guardrail & Access Control]
-        DB_SRV[Marga Database Engine - MongoDB / Local State]
-    end
-
-    subgraph Intelligence & ML Microservice
-        ML_SRV[MARGA Brain Inference Service - FastAPI]
-        M1[Model 01: Risk Inspection Router]
-        M2[Model 02: PWD Cost Predictor]
-        M3[Model 03: 500m Duplicate Radar]
-        M4[Model 04: EXIF GPS Authenticator]
-        M5[Model 05: NLP Rule Classifier]
-    end
-
-    MP -->|Submit Proposal| GW
-    DA -->|Sanction & Route| GW
-    IA -->|Progress & Disbursal| GW
-    SNO -->|State Meta Audit| GW
-    MOSPI -->|National Analytics| GW
-    PUB -->|Social Audit & Feedback| GW
-    EYES -->|Live Geo Photo Upload| GW
-
-    GW --> AUTH
-    AUTH --> DB_SRV
-    GW <-->|REST Async Calls| ML_SRV
-
-    ML_SRV --> M1
-    ML_SRV --> M2
-    ML_SRV --> M3
-    ML_SRV --> M4
-    ML_SRV --> M5
-```
-
----
-
-## Multi-Portal Stakeholder Matrix
-
-MARGA enforces strict role-based data isolation and workflow guardrails tailored for every tier of public administration.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor MP as Member of Parliament
-    actor DA as District Authority (Collector)
-    actor IA as Implementing Agency
-    actor SNO as State Nodal Officer
-    actor MoSPI as Ministry (MoSPI)
-    actor Public as Citizen / Public
-
-    MP->>DA: 1. Recommend Project Proposal
-    DA->>DA: 2. Run NLP Rule Check & 500m Radar Scan
-    DA->>IA: 3. Issue Technical Sanction & Allocations
-    IA->>DA: 4. Upload CameraX Live Site Photo
-    DA->>SNO: 5. Flag High Risk / Delayed Works
-    SNO->>MoSPI: 6. Aggregate State Performance Report
-    Public->>Public: 7. Perform Independent Social Audit
-```
-
-### Role Functionality Breakdown
-
-| Portal Type | Target Stakeholder | Core Administrative Responsibilities | Primary Code Controller |
-| :--- | :--- | :--- | :--- |
-| **MP Portal** | Member of Parliament | Recommendation submission, constituency fund tracking, sector spend analytics | [src/components/mp/MpPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mp/MpPortal.tsx) |
-| **DA Collector Portal** | District Magistrate / Collector | AI proposal screening, official sanction issuance, inspection route generation | [src/components/da/DaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/da/DaPortal.tsx) |
-| **IA Portal** | Executive Engineer / Agency | Work order execution, financial milestone claims, live site photo uploads | [src/components/ia/IaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/ia/IaPortal.tsx) |
-| **State Nodal Portal** | State Planning Department | Inter-district audit comparison, agency ranking, systemic inflation tracking | [src/components/state/StatePortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/state/StatePortal.tsx) |
-| **MoSPI Portal** | Ministry HQ (New Delhi) | National macro analytics, state fund utilization dashboard, policy decision support | [src/components/mospi/MospiPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mospi/MospiPortal.tsx) |
-| **Public Portal** | Citizens & Civil Society | Open transparency dashboard, GIS map visualization, social audit feedback | [src/components/public](file:///c:/Users/yashk/Downloads/marga/src/components/public) |
-
----
-
-## Low-Level Technical Architecture
+## Section 1: Low-Level Technical Architecture
 
 ### 1. Low-Level Work Order Lifecycle State Machine
 
@@ -222,15 +134,103 @@ erDiagram
 
 ---
 
-## Interactive Dashboards & Video Demonstrations
+## Section 2: High-Level System Architecture
+
+The MARGA platform operates on a modular, decoupled architecture consisting of a React-TypeScript Web Portal suite, an Express REST API backend, a Python ML inference microservice, and native Android applications.
+
+```mermaid
+graph TD
+    subgraph Client Presentation Layer
+        MP[MP Portal - React TS]
+        DA[DA Collector Portal - React TS]
+        IA[Implementing Agency Portal - React TS]
+        SNO[State Nodal Officer Portal - React TS]
+        MOSPI[MoSPI National Portal - React TS]
+        PUB[Public Transparency Portal - React TS]
+        EYES[MARGA Eyes - Android Camera App]
+    end
+
+    subgraph API & Gateway Layer
+        GW[Express REST API Gateway - Node.js]
+        AUTH[Role-Based Guardrail & Access Control]
+        DB_SRV[Marga Database Engine - MongoDB / Local State]
+    end
+
+    subgraph Intelligence & ML Microservice
+        ML_SRV[MARGA Brain Inference Service - FastAPI]
+        M1[Model 01: Risk Inspection Router]
+        M2[Model 02: PWD Cost Predictor]
+        M3[Model 03: 500m Duplicate Radar]
+        M4[Model 04: EXIF GPS Authenticator]
+        M5[Model 05: NLP Rule Classifier]
+    end
+
+    MP -->|Submit Proposal| GW
+    DA -->|Sanction & Route| GW
+    IA -->|Progress & Disbursal| GW
+    SNO -->|State Meta Audit| GW
+    MOSPI -->|National Analytics| GW
+    PUB -->|Social Audit & Feedback| GW
+    EYES -->|Live Geo Photo Upload| GW
+
+    GW --> AUTH
+    AUTH --> DB_SRV
+    GW <-->|REST Async Calls| ML_SRV
+
+    ML_SRV --> M1
+    ML_SRV --> M2
+    ML_SRV --> M3
+    ML_SRV --> M4
+    ML_SRV --> M5
+```
+
+---
+
+### High-Level Multi-Portal Stakeholder Matrix
+
+MARGA enforces strict role-based data isolation and workflow guardrails tailored for every tier of public administration.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor MP as Member of Parliament
+    actor DA as District Authority (Collector)
+    actor IA as Implementing Agency
+    actor SNO as State Nodal Officer
+    actor MoSPI as Ministry (MoSPI)
+    actor Public as Citizen / Public
+
+    MP->>DA: 1. Recommend Project Proposal
+    DA->>DA: 2. Run NLP Rule Check & 500m Radar Scan
+    DA->>IA: 3. Issue Technical Sanction & Allocations
+    IA->>DA: 4. Upload CameraX Live Site Photo
+    DA->>SNO: 5. Flag High Risk / Delayed Works
+    SNO->>MoSPI: 6. Aggregate State Performance Report
+    Public->>Public: 7. Perform Independent Social Audit
+```
+
+### Role Functionality Breakdown
+
+| Portal Type | Target Stakeholder | Core Administrative Responsibilities | Primary Code Controller |
+| :--- | :--- | :--- | :--- |
+| **MP Portal** | Member of Parliament | Recommendation submission, constituency fund tracking, sector spend analytics | [src/components/mp/MpPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mp/MpPortal.tsx) |
+| **DA Collector Portal** | District Magistrate / Collector | AI proposal screening, official sanction issuance, inspection route generation | [src/components/da/DaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/da/DaPortal.tsx) |
+| **IA Portal** | Executive Engineer / Agency | Work order execution, financial milestone claims, live site photo uploads | [src/components/ia/IaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/ia/IaPortal.tsx) |
+| **State Nodal Portal** | State Planning Department | Inter-district audit comparison, agency ranking, systemic inflation tracking | [src/components/state/StatePortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/state/StatePortal.tsx) |
+| **MoSPI Portal** | Ministry HQ (New Delhi) | National macro analytics, state fund utilization dashboard, policy decision support | [src/components/mospi/MospiPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mospi/MospiPortal.tsx) |
+| **Public Portal** | Citizens & Civil Society | Open transparency dashboard, GIS map visualization, social audit feedback | [src/components/public](file:///c:/Users/yashk/Downloads/marga/src/components/public) |
+
+---
+
+## Section 3: Interactive Dashboards & Video Demonstrations
 
 The repository includes standalone, high-definition HTML dashboards designed for live demonstrations, video recording, and architectural presentation:
 
 - **[Model 03: 500m Geospatial Duplicate Radar Dashboard](file:///c:/Users/yashk/Downloads/marga/model3_dashboard.html)**  
   Features an interactive Leaflet GIS map with beige topographic tiles, preset road work collision scenarios (side-by-side claim audit for identical road stretches), and real-time vector similarity scoring.
 
-- **[MARGA Platform Architecture: 5 AI Models Visual Roadmap](file:///c:/Users/yashk/Downloads/marga/models.html)**  
-  Comprehensive visual storyboard walking through the problem statements, execution pipelines, and interactive demos for all 5 machine learning models.
+- **[models.html](file:///c:/Users/yashk/Downloads/marga/models.html)**  
+  Comprehensive visual roadmap walking through the problem statements, execution pipelines, and interactive demos for all 5 machine learning models.
 
 - **[Technical Architecture & Ecosystem Walkthrough](file:///c:/Users/yashk/Downloads/marga/explaining.html)**  
   Systematic breakdown of the multi-role civic infrastructure operating system layout.
@@ -240,7 +240,7 @@ The repository includes standalone, high-definition HTML dashboards designed for
 
 ---
 
-## Repository Structure & Code Base Directory Tree
+## Section 4: Repository Structure & Code Base Directory Tree
 
 ```
 marga/
@@ -272,7 +272,7 @@ marga/
 |   `-- marga-eyes/             # Core CameraX Geotagging Android App -> [mobile/marga-eyes](file:///c:/Users/yashk/Downloads/marga/mobile/marga-eyes)
 |-- public/                     # Static assets and standalone dashboards
 |   |-- model3_dashboard.html   # Dedicated 500m Geospatial Radar Showcase
-|   `-- models.html             # Interactive 5-Model Roadmap Showcase
+|   `-- models.html             # Interactive 5-Model Roadmap Showcase -> [models.html](file:///c:/Users/yashk/Downloads/marga/models.html)
 |-- src/                        # Primary React TypeScript Web Application
 |   |-- components/             # Role-specific and shared UI components
 |   |   |-- auth/               # Multi-role authentication pages -> [src/components/auth/RoleLoginPage.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/auth/RoleLoginPage.tsx)
@@ -301,7 +301,7 @@ marga/
 
 ---
 
-## Local Setup & Hosting
+## Section 5: Local Setup & Hosting
 
 ### Prerequisites
 - **Node.js**: v18.0.0 or higher
