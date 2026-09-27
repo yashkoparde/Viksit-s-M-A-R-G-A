@@ -74,11 +74,11 @@ flowchart LR
 
 | Model ID | Name | Low-Level Algorithm | Primary Input | Output Verdict | Implementation File |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Model 01** | Inspection Priority Router | Anomaly Risk Scoring & TSP Traveling Salesman | Timeline delays & drawdowns | Optimized Inspection Itinerary | [marga-ml/rba_anomaly_detector.py](file:///c:/Users/yashk/Downloads/marga/marga-ml/rba_anomaly_detector.py) |
-| **Model 02** | Cost & Delay Predictor | LightGBM Booster & SHAP TreeExplainer | Categorical features & text | Budget Tranche & Delay Alert | [marga-ml/mysore_lgb_model.txt](file:///c:/Users/yashk/Downloads/marga/marga-ml/mysore_lgb_model.txt) |
-| **Model 03** | Duplicate Radius Radar | 500m BallTree Geospatial Spatial Radar | GPS Lat / Long & Name | Side-by-Side Collision Score | [model3_dashboard.html](file:///c:/Users/yashk/Downloads/marga/model3_dashboard.html) |
-| **Model 04** | CameraX Geotag Authenticator | Android CameraX & EXIF Location Metadata | Live camera stream & GPS | Authenticated Tamper-Proof Photo | [mobile/marga-eyes](file:///c:/Users/yashk/Downloads/marga/mobile/marga-eyes) |
-| **Model 05** | Rule & Clause Classifier | SentenceTransformers (`all-MiniLM-L6-v2`) | Work description text | Permissible vs Violation Clause | [marga-ml/nlp_compliance.py](file:///c:/Users/yashk/Downloads/marga/marga-ml/nlp_compliance.py) |
+| **Model 01** | Inspection Priority Router | Anomaly Risk Scoring & TSP Traveling Salesman | Timeline delays & drawdowns | Optimized Inspection Itinerary | [marga-ml/rba_anomaly_detector.py](marga-ml/rba_anomaly_detector.py) |
+| **Model 02** | Cost & Delay Predictor | LightGBM Booster & SHAP TreeExplainer | Categorical features & text | Budget Tranche & Delay Alert | [marga-ml/mysore_lgb_model.txt](marga-ml/mysore_lgb_model.txt) |
+| **Model 03** | Duplicate Radius Radar | 500m BallTree Geospatial Spatial Radar | GPS Lat / Long & Name | Side-by-Side Collision Score | [model3_dashboard.html](model3_dashboard.html) |
+| **Model 04** | CameraX Geotag Authenticator | Android CameraX & EXIF Location Metadata | Live camera stream & GPS | Authenticated Tamper-Proof Photo | [mobile/marga-eyes](mobile/marga-eyes) |
+| **Model 05** | Rule & Clause Classifier | SentenceTransformers (`all-MiniLM-L6-v2`) | Work description text | Permissible vs Violation Clause | [marga-ml/nlp_compliance.py](marga-ml/nlp_compliance.py) |
 
 ---
 
@@ -213,12 +213,12 @@ sequenceDiagram
 
 | Portal Type | Target Stakeholder | Core Administrative Responsibilities | Primary Code Controller |
 | :--- | :--- | :--- | :--- |
-| **MP Portal** | Member of Parliament | Recommendation submission, constituency fund tracking, sector spend analytics | [src/components/mp/MpPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mp/MpPortal.tsx) |
-| **DA Collector Portal** | District Magistrate / Collector | AI proposal screening, official sanction issuance, inspection route generation | [src/components/da/DaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/da/DaPortal.tsx) |
-| **IA Portal** | Executive Engineer / Agency | Work order execution, financial milestone claims, live site photo uploads | [src/components/ia/IaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/ia/IaPortal.tsx) |
-| **State Nodal Portal** | State Planning Department | Inter-district audit comparison, agency ranking, systemic inflation tracking | [src/components/state/StatePortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/state/StatePortal.tsx) |
-| **MoSPI Portal** | Ministry HQ (New Delhi) | National macro analytics, state fund utilization dashboard, policy decision support | [src/components/mospi/MospiPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mospi/MospiPortal.tsx) |
-| **Public Portal** | Citizens & Civil Society | Open transparency dashboard, GIS map visualization, social audit feedback | [src/components/public](file:///c:/Users/yashk/Downloads/marga/src/components/public) |
+| **MP Portal** | Member of Parliament | Recommendation submission, constituency fund tracking, sector spend analytics | [src/components/mp/MpPortal.tsx](src/components/mp/MpPortal.tsx) |
+| **DA Collector Portal** | District Magistrate / Collector | AI proposal screening, official sanction issuance, inspection route generation | [src/components/da/DaPortal.tsx](src/components/da/DaPortal.tsx) |
+| **IA Portal** | Executive Engineer / Agency | Work order execution, financial milestone claims, live site photo uploads | [src/components/ia/IaPortal.tsx](src/components/ia/IaPortal.tsx) |
+| **State Nodal Portal** | State Planning Department | Inter-district audit comparison, agency ranking, systemic inflation tracking | [src/components/state/StatePortal.tsx](src/components/state/StatePortal.tsx) |
+| **MoSPI Portal** | Ministry HQ (New Delhi) | National macro analytics, state fund utilization dashboard, policy decision support | [src/components/mospi/MospiPortal.tsx](src/components/mospi/MospiPortal.tsx) |
+| **Public Portal** | Citizens & Civil Society | Open transparency dashboard, GIS map visualization, social audit feedback | [src/components/public](src/components/public) |
 
 ---
 
@@ -226,16 +226,16 @@ sequenceDiagram
 
 The repository includes standalone, high-definition HTML dashboards designed for live demonstrations, video recording, and architectural presentation:
 
-- **[Model 03: 500m Geospatial Duplicate Radar Dashboard](file:///c:/Users/yashk/Downloads/marga/model3_dashboard.html)**  
+- **[Model 03: 500m Geospatial Duplicate Radar Dashboard](model3_dashboard.html)**  
   Features an interactive Leaflet GIS map with beige topographic tiles, preset road work collision scenarios (side-by-side claim audit for identical road stretches), and real-time vector similarity scoring.
 
-- **[models.html](file:///c:/Users/yashk/Downloads/marga/models.html)**  
+- **[models.html](models.html)**  
   Comprehensive visual roadmap walking through the problem statements, execution pipelines, and interactive demos for all 5 machine learning models.
 
-- **[Technical Architecture & Ecosystem Walkthrough](file:///c:/Users/yashk/Downloads/marga/explaining.html)**  
+- **[Technical Architecture & Ecosystem Walkthrough](explaining.html)**  
   Systematic breakdown of the multi-role civic infrastructure operating system layout.
 
-- **[Quick Navigation & Links Hub](file:///c:/Users/yashk/Downloads/marga/links.html)**  
+- **[Quick Navigation & Links Hub](links.html)**  
   Direct shortcuts to all static assets, dashboards, and API health verification endpoints.
 
 ---
@@ -244,11 +244,9 @@ The repository includes standalone, high-definition HTML dashboards designed for
 
 ```
 marga/
-|-- api/                        # Vercel Serverless Function entry point
-|   `-- index.js                # Serverless gateway handler -> [api/index.js](file:///c:/Users/yashk/Downloads/marga/api/index.js)
+|-- api/                        # Vercel Serverless Function entry point -> [api/index.js](api/index.js)
 |-- assets/                     # Platform diagrams, media, and sequence assets
-|-- data/                       # Pre-seeded database files
-|   `-- marga_database.json     # Primary database JSON state -> [data/marga_database.json](file:///c:/Users/yashk/Downloads/marga/data/marga_database.json)
+|-- data/                       # Pre-seeded database files -> [data/marga_database.json](data/marga_database.json)
 |-- dataset/                    # Official MPLADS historical datasets
 |   |-- json_2026-09-02.json    # Consolidated JSON dataset
 |   |-- mplads_completed_works.csv
@@ -257,10 +255,10 @@ marga/
 |   `-- mplads_recommended_works.csv
 |-- dist/                       # Compiled production web build artifacts
 |-- marga-ml/                   # Python ML & Microservice Backend
-|   |-- main.py                 # FastAPI inference service entry point -> [marga-ml/main.py](file:///c:/Users/yashk/Downloads/marga/marga-ml/main.py)
+|   |-- main.py                 # FastAPI inference service entry point -> [marga-ml/main.py](marga-ml/main.py)
 |   |-- mysore_lgb_model.txt    # Trained LightGBM cost prediction model
-|   |-- nlp_compliance.py       # Sentence Transformer guideline engine -> [marga-ml/nlp_compliance.py](file:///c:/Users/yashk/Downloads/marga/marga-ml/nlp_compliance.py)
-|   |-- rba_anomaly_detector.py # Risk-Based Anomaly Scoring module -> [marga-ml/rba_anomaly_detector.py](file:///c:/Users/yashk/Downloads/marga/marga-ml/rba_anomaly_detector.py)
+|   |-- nlp_compliance.py       # Sentence Transformer guideline engine -> [marga-ml/nlp_compliance.py](marga-ml/nlp_compliance.py)
+|   |-- rba_anomaly_detector.py # Risk-Based Anomaly Scoring module -> [marga-ml/rba_anomaly_detector.py](marga-ml/rba_anomaly_detector.py)
 |   `-- requirements.txt        # Python dependency manifest
 |-- mobile/                     # Native Android Mobile Applications Suite
 |   |-- marga-app-da/           # DA Collector Mobile Portal App
@@ -269,34 +267,34 @@ marga/
 |   |-- marga-app-mp/           # MP Mobile Portal App
 |   |-- marga-app-public/       # Public Transparency Mobile App
 |   |-- marga-app-state/        # State Nodal Officer Mobile App
-|   `-- marga-eyes/             # Core CameraX Geotagging Android App -> [mobile/marga-eyes](file:///c:/Users/yashk/Downloads/marga/mobile/marga-eyes)
+|   `-- marga-eyes/             # Core CameraX Geotagging Android App -> [mobile/marga-eyes](mobile/marga-eyes)
 |-- public/                     # Static assets and standalone dashboards
 |   |-- model3_dashboard.html   # Dedicated 500m Geospatial Radar Showcase
-|   `-- models.html             # Interactive 5-Model Roadmap Showcase -> [models.html](file:///c:/Users/yashk/Downloads/marga/models.html)
+|   `-- models.html             # Interactive 5-Model Roadmap Showcase -> [models.html](models.html)
 |-- src/                        # Primary React TypeScript Web Application
 |   |-- components/             # Role-specific and shared UI components
-|   |   |-- auth/               # Multi-role authentication pages -> [src/components/auth/RoleLoginPage.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/auth/RoleLoginPage.tsx)
+|   |   |-- auth/               # Multi-role authentication pages -> [src/components/auth/RoleLoginPage.tsx](src/components/auth/RoleLoginPage.tsx)
 |   |   |-- common/             # Visualizers, drawers, modals, header/sidebar
-|   |   |-- da/                 # District Authority Portal views -> [src/components/da/DaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/da/DaPortal.tsx)
-|   |   |-- ia/                 # Implementing Agency Portal views -> [src/components/ia/IaPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/ia/IaPortal.tsx)
-|   |   |-- mospi/              # MoSPI National Portal views -> [src/components/mospi/MospiPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mospi/MospiPortal.tsx)
-|   |   |-- mp/                 # MP Portal views -> [src/components/mp/MpPortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/mp/MpPortal.tsx)
-|   |   `-- state/              # State Nodal Officer Portal views -> [src/components/state/StatePortal.tsx](file:///c:/Users/yashk/Downloads/marga/src/components/state/StatePortal.tsx)
-|   |-- models/                 # Express backend Mongoose data models -> [src/models](file:///c:/Users/yashk/Downloads/marga/src/models)
-|   |-- routes/                 # Express REST API route controllers -> [src/routes/ai.js](file:///c:/Users/yashk/Downloads/marga/src/routes/ai.js)
-|   |-- services/               # API clients, database engines, Supabase -> [src/services/apiService.ts](file:///c:/Users/yashk/Downloads/marga/src/services/apiService.ts)
-|   |-- types/                  # TypeScript interfaces -> [src/types/index.ts](file:///c:/Users/yashk/Downloads/marga/src/types/index.ts)
-|   |-- App.tsx                 # Main Application router & layout -> [src/App.tsx](file:///c:/Users/yashk/Downloads/marga/src/App.tsx)
-|   |-- main.tsx                # React application entry point -> [src/main.tsx](file:///c:/Users/yashk/Downloads/marga/src/main.tsx)
-|   `-- server.js               # Node.js Express REST API server -> [src/server.js](file:///c:/Users/yashk/Downloads/marga/src/server.js)
+|   |   |-- da/                 # District Authority Portal views -> [src/components/da/DaPortal.tsx](src/components/da/DaPortal.tsx)
+|   |   |-- ia/                 # Implementing Agency Portal views -> [src/components/ia/IaPortal.tsx](src/components/ia/IaPortal.tsx)
+|   |   |-- mospi/              # MoSPI National Portal views -> [src/components/mospi/MospiPortal.tsx](src/components/mospi/MospiPortal.tsx)
+|   |   |-- mp/                 # MP Portal views -> [src/components/mp/MpPortal.tsx](src/components/mp/MpPortal.tsx)
+|   |   `-- state/              # State Nodal Officer Portal views -> [src/components/state/StatePortal.tsx](src/components/state/StatePortal.tsx)
+|   |-- models/                 # Express backend Mongoose data models -> [src/models](src/models)
+|   |-- routes/                 # Express REST API route controllers -> [src/routes/ai.js](src/routes/ai.js)
+|   |-- services/               # API clients, database engines, Supabase -> [src/services/apiService.ts](src/services/apiService.ts)
+|   |-- types/                  # TypeScript interfaces -> [src/types/index.ts](src/types/index.ts)
+|   |-- App.tsx                 # Main Application router & layout -> [src/App.tsx](src/App.tsx)
+|   |-- main.tsx                # React application entry point -> [src/main.tsx](src/main.tsx)
+|   `-- server.js               # Node.js Express REST API server -> [src/server.js](src/server.js)
 |-- docker-compose.yml          # Container orchestration configuration
 |-- Dockerfile                  # Container build instructions
 |-- index.html                  # Main web entry frame
-|-- model3_dashboard.html       # Standalone Model 03 Radar Showcase -> [model3_dashboard.html](file:///c:/Users/yashk/Downloads/marga/model3_dashboard.html)
-|-- models.html                 # Standalone 5-Model Visual Roadmap -> [models.html](file:///c:/Users/yashk/Downloads/marga/models.html)
-|-- package.json                # Project dependencies -> [package.json](file:///c:/Users/yashk/Downloads/marga/package.json)
-|-- tsconfig.json               # TypeScript compiler configuration -> [tsconfig.json](file:///c:/Users/yashk/Downloads/marga/tsconfig.json)
-`-- vite.config.ts              # Vite bundler configuration -> [vite.config.ts](file:///c:/Users/yashk/Downloads/marga/vite.config.ts)
+|-- model3_dashboard.html       # Standalone Model 03 Radar Showcase -> [model3_dashboard.html](model3_dashboard.html)
+|-- models.html                 # Standalone 5-Model Visual Roadmap -> [models.html](models.html)
+|-- package.json                # Project dependencies -> [package.json](package.json)
+|-- tsconfig.json               # TypeScript compiler configuration -> [tsconfig.json](tsconfig.json)
+`-- vite.config.ts              # Vite bundler configuration -> [vite.config.ts](vite.config.ts)
 ```
 
 ---

@@ -36,3 +36,10 @@ uploads/reports/
 Thumbs.db
 .vscode/
 .idea/
+
+# Android build artifacts & local properties
+.gradle/
+build/
+**/build/
+local.properties
+**/local.properties
